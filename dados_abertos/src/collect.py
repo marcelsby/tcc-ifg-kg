@@ -12,7 +12,7 @@ download_metadata = [
     (base_url + "207", "estagios_curriculares.json"),
     (base_url + "252", "discentes.json"),
     (base_url + "402", "docentes.json"),
-    (base_url + "557", "editais_iniciacao_cientifica.json")
+    (base_url + "557", "editais_iniciacao_cientifica.json"),
 ]
 
 for file in download_metadata:
