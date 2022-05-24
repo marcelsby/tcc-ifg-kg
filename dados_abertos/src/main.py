@@ -24,4 +24,3 @@ json_to_csv(
     raw_path / "unidades.json",
     transformed_path / "unidades.csv",
 )
-
