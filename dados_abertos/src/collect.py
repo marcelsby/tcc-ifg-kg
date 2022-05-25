@@ -13,7 +13,10 @@ download_metadata = [
     (base_url + "252", "discentes.json"),
     (base_url + "402", "docentes.json"),
     (base_url + "502", "unidades.json"),
-    (base_url + "557", "editais_iniciacao_cientifica.json"),
+    (
+        "https://sugep.ifg.edu.br/eventos/api/portaltransparencia/editais/IFG",
+        "editais_iniciacao_cientifica.json",
+    ),
 ]
 
 for file in download_metadata:
