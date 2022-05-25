@@ -37,6 +37,11 @@ barramento_ifg_params = [
         "estagios_curriculares.json",
         "estagios_curriculares.csv",
     ),
+    (
+        "nome;matricula;cargo;data_de_ingresso;atribuicao;carga_horaria",
+        "servidores.json",
+        "servidores.csv",
+    ),
 ]
 
 
