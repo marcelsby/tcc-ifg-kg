@@ -4,36 +4,36 @@ from pathlib import Path
 from utils.messages import print_success, print_error
 
 
-def json_to_csv(cabecalho: str, raw: Path, transformed: Path):
+def barramento_ifg_json_to_csv(header: str, raw: Path, transformed: Path):
     if not transformed.is_file():
         Path(transformed).touch()
 
-    qtd_atributos = len(cabecalho.split(";"))
+    attributes_count = len(header.split(";"))
 
     with open(raw) as f:
         loaded_json = json.load(f)
 
     try:
         with open(transformed, "a") as output_file:
-            output_file.write(cabecalho)
+            output_file.write(f"{header}\n")
 
-            for registro in loaded_json:
+            for row in loaded_json:
                 linha = ""
 
-                for atributo in range(0, qtd_atributos):
-                    valor: str = registro["itens"][atributo]["valor"]
+                for attribute in range(0, attributes_count):
+                    value: str = row["itens"][attribute]["valor"]
 
-                    if valor in (None, "0.0"):
-                        valor = ""
-                    elif valor == ";":
-                        valor = ","
+                    if value in (None, "0.0"):
+                        value = ""
+                    elif value == ";":
+                        value = ","
                     else:
-                        valor = valor.strip()
+                        value = value.strip()
 
-                    if atributo == qtd_atributos - 1:
-                        linha += valor + "\n"
+                    if attribute == attributes_count - 1:
+                        linha += value + "\n"
                     else:
-                        linha += valor + ";"
+                        linha += value + ";"
 
                 output_file.write(linha)
 

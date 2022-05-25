@@ -1,5 +1,6 @@
 from utils.downloader import download
 from pathlib import Path
+from tqdm import tqdm
 
 base_url = "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/"
 dest_path = Path("../data/raw")
@@ -19,5 +20,5 @@ download_metadata = [
     ),
 ]
 
-for file in download_metadata:
+for file in tqdm(download_metadata):
     download(file[0], file[1], dest_path)

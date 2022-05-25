@@ -1,5 +1,10 @@
 from pathlib import Path
 import requests
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+
+
+urllib3.disable_warnings(InsecureRequestWarning)
 
 
 def download(url: str, dest_file: str, dest_path: Path):
