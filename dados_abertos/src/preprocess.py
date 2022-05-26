@@ -4,8 +4,13 @@ from pathlib import Path
 from utils.messages import print_success, print_error
 
 
-def barramento_ifg_json_to_csv(header: str, raw: Path, transformed: Path):
-    if not transformed.is_file():
+def barramento_ifg_json_to_csv(
+    header: str, filename: str, raw: Path, transformed: Path
+):
+    raw = raw / f"{filename}.json"
+    transformed = transformed / f"{filename}.csv"
+
+    if not (transformed).is_file():
         Path(transformed).touch()
 
     attributes_count = len(header.split(";"))
