@@ -35,9 +35,7 @@ barramento_ifg_params = [
     ("nome;matricula;cargo;data_de_ingresso;atribuicao;carga_horaria", "servidores"),
 ]
 
-
 for param_list in tqdm(barramento_ifg_params):
     barramento_ifg_json_to_csv(param_list[0], param_list[1], raw_path, transformed_path)
-
 
 # TODO: transformar o json de editais de iniciação científica em csv

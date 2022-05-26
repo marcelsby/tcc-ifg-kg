@@ -1,6 +1,6 @@
 import unittest
-from database import Neo4jConnection, CypherCreateQueryBuilder
-from neo4j.exceptions import ServiceUnavailable
+
+from database import CypherCreateQueryBuilder
 
 builder = CypherCreateQueryBuilder("Teste")
 

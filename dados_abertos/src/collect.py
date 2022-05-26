@@ -1,6 +1,8 @@
-from utils.downloader import download
 from pathlib import Path
+
 from tqdm import tqdm
+
+from utils.downloader import download
 
 base_url = "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/"
 dest_path = Path("../data/raw")
