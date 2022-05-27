@@ -160,4 +160,9 @@ cython_debug/
 .idea/
 
 # Ignore downloaded files
-dados_abertos/data/
+dados_abertos/data/preprocessed
+dados_abertos/data/raw
+dados_abertos/data/transformed
+
+# Não ignorar o .csv de servidores baixados do Portal da Transparência
+!dados_abertos/data/extra/
