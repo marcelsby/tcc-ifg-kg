@@ -12,6 +12,9 @@ def barramento_ifg_json_to_csv(
 
     if not (transformed).is_file():
         Path(transformed).touch()
+    else:
+        # Limpa o arquivo caso ele exista, para não duplicar os resultados da conversão
+        transformed.write_text("")
 
     attributes_count = len(header.split(";"))
 
