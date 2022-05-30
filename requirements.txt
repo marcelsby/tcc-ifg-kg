@@ -37,7 +37,9 @@ nbformat==5.4.0
 neo4j==4.4.3
 nest-asyncio==1.5.5
 notebook==6.4.11
+numpy==1.22.4
 packaging==21.3
+pandas==1.4.2
 pandocfilters==1.5.0
 parso==0.8.3
 pathspec==0.9.0
@@ -69,7 +71,7 @@ tomli==2.0.1
 tornado==6.1
 tqdm==4.64.0
 traitlets==5.2.1.post0
-typing_extensions==4.2.0
+typing-extensions==4.2.0
 urllib3==1.26.9
 wcwidth==0.2.5
 webencodings==0.5.1
