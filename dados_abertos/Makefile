@@ -27,5 +27,8 @@ format: venv
 	$(source_venv) && black src/
 	@echo Código formatado com SUCESSO!
 
-venv:
-	test -d ../venv || (python3 -m venv ../venv && $(source_venv) && pip install -r ../requirements.txt)
+venv: deps
+	test -d ../venv || (python3 -m venv ../venv && $(source_venv))
+
+deps:
+	$(source_venv) && pip install -r ../requirements.txt
