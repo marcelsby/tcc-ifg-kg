@@ -10,7 +10,7 @@ def barramento_ifg_json_to_csv(
     raw = raw / f"{filename}.json"
     transformed = transformed / f"{filename}.csv"
 
-    if not (transformed).is_file():
+    if not transformed.is_file():
         Path(transformed).touch()
     else:
         # Limpa o arquivo caso ele exista, para não duplicar os resultados da conversão

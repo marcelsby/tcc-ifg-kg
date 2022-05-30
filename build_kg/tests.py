@@ -1,6 +1,6 @@
 import unittest
 
-from database import CypherCreateQueryBuilder
+from database import CypherCreateQueryBuilder, create_relationship_query
 
 builder = CypherCreateQueryBuilder("Teste")
 
@@ -18,6 +18,21 @@ class TestDatabaseModule(unittest.TestCase):
         )
         self.assertEqual(
             query, 'CREATE (n:Teste) SET n.atributo = "valor", n.testando = "123"'
+        )
+
+    def test_create_relationship_query(self):
+        query = create_relationship_query(
+            "Docente",
+            "matricula",
+            "123456",
+            "Unidade",
+            "nome",
+            "CÂMPUS ÁGUAS LINDAS",
+            "part_of",
+        )
+        self.assertEqual(
+            query,
+            'MATCH (a:Docente), (b:Unidade) WHERE a.matricula = "123456" AND b.nome = "CÂMPUS ÁGUAS LINDAS" CREATE (a)-[r:part_of]->(b)',
         )
 
 

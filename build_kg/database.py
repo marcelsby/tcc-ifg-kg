@@ -1,6 +1,7 @@
 import logging as log
 from enum import Enum, auto
 
+import numpy as np
 from neo4j import GraphDatabase
 
 log.basicConfig(
@@ -52,20 +53,29 @@ class Neo4jConnection:
 class Neo4jDataType(Enum):
     STRING = auto()
     NUMBER = auto()
+    DATE = auto()
 
 
 class CypherCreateQueryBuilder:
-    def __init__(self, label: str):
-        self.__label = label
+    def __init__(self, label: str or [str]):
+        if isinstance(label, list):
+            self.__label = ":".join(label)
+        else:
+            self.__label = label
+
         self.__attributes = []
         self.__BASE_STMT = f"CREATE (n:{self.__label}) SET "
 
-    def add_atribute(self, key, value, type=Neo4jDataType.STRING):
-        if value == None:
+    def add_atribute(self, key, value, vtype=Neo4jDataType.STRING):
+        if value is None:
+            return self
+        elif value is np.nan:
             return self
 
-        if type is Neo4jDataType.STRING:
+        if vtype is Neo4jDataType.STRING:
             value = f'"{value}"'
+        elif vtype is Neo4jDataType.DATE:
+            value = f'date("{value}")'
 
         self.__attributes.append(f"n.{key} = {value}")
 
@@ -85,3 +95,9 @@ class CypherCreateQueryBuilder:
 
     def reset(self):
         self.__attributes = []
+
+
+def create_relationship_query(
+    a_label, a_attr, a_value, b_label, b_attr, b_value, reltype
+):
+    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE a.{a_attr} = "{a_value}" AND b.{b_attr} = "{b_value}" CREATE (a)-[r:{reltype}]->(b)'

@@ -15,7 +15,7 @@ barramento_ifg_params = [
         "campus;nome;codigo;modalidade;formato;turno;periodo_de_ingresso;qtd_vagas_ano;nivel;ch_disciplinas;ch_complementar;ch_estagio;ch_optativas;ch_projeto_final;ch_total;qtd_semestres",
         "cursos",
     ),
-    ("nome;matricula;curso;campus", "docentes"),
+    ("nome;matricula;disciplina_ministrada;campus", "docentes"),
     (
         "nome;sigla;endereco;site;telefone;email;cnpj;uasg;autoridade_maxima_unidade",
         "unidades",
@@ -32,7 +32,7 @@ barramento_ifg_params = [
         "campus;curso;modalidade;nivel;data1;data2;data3;ofertante;status;tipo;remunerado;valor_remuneracao",
         "estagios_curriculares",
     ),
-    ("nome;matricula;cargo;data_de_ingresso;atribuicao;carga_horaria", "servidores"),
+    ("nome;matricula;cargo;data_ingresso;atribuicao;carga_horaria", "servidores"),
 ]
 
 for param_list in tqdm(barramento_ifg_params):

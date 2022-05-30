@@ -27,7 +27,7 @@ format: venv
 	$(source_venv) && black src/
 	@echo Código formatado com SUCESSO!
 
-venv: deps
+venv:
 	test -d ../venv || (python3 -m venv ../venv && $(source_venv))
 
 deps:
