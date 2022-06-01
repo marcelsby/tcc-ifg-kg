@@ -1,6 +1,8 @@
 from pathlib import Path
+import logging as log
 
 import pandas as pd
+from neo4j.exceptions import ServiceUnavailable
 
 from database import (
     Neo4jConnection,
@@ -35,8 +37,13 @@ def insert_unidades():
             .add_atribute("uasg", row["uasg"])
             .build()
         )
-
-        conn.query(builded_query)
+        try:
+            conn.query(builded_query)
+            log.info(f'SUCESSO ao inserir unidade: {row["sigla"]}')
+        except ServiceUnavailable as e:
+            log.error(
+                f'ERRO ao inserir unidade: {row["sigla"]}. Mensagem de erro: {str(e)}'
+            )
 
 
 def insert_docentes():
@@ -68,8 +75,16 @@ def insert_docentes():
             "PART_OF",
         )
 
-        conn.query(create_query)
-        conn.query(relationship_query)
+        try:
+            conn.query(create_query)
+            conn.query(relationship_query)
+            log.info(
+                f'SUCESSO ao inserir docente e o seu relacionamento com uma unidade: {row["matricula"]}'
+            )
+        except ServiceUnavailable as e:
+            log.error(
+                f"ERRO ao inserir docente e o seu relacionamento com uma unidade. Mensagem de erro: {str(e)}"
+            )
 
 
 insert_unidades()
