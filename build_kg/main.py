@@ -87,5 +87,46 @@ def insert_docentes():
             )
 
 
+def insert_taes():
+    taes_csv = preprocessed_path / "taes.csv"
+    taes_df = pd.read_csv(taes_csv, delimiter=";")
+
+    create_query_builder = CypherCreateQueryBuilder(["TAE", "Servidor"])
+
+    for index, row in taes_df.iterrows():
+        create_query = (
+            create_query_builder.add_atribute("nome", row["nome"])
+            .add_atribute("matricula", row["matricula"])
+            .add_atribute(
+                "data_ingresso", row["data_ingresso"], vtype=Neo4jDataType.DATE
+            )
+            .add_atribute("atribuicao", row["atribuicao"])
+            .add_atribute("carga_horaria", row["carga_horaria"])
+            .build()
+        )
+
+        relationship_query = create_relationship_query(
+            "TAE",
+            "matricula",
+            row["matricula"],
+            "Unidade",
+            "sigla",
+            row["uorg_exercicio"],
+            "PART_OF",
+        )
+
+        try:
+            conn.query(create_query)
+            conn.query(relationship_query)
+            log.info(
+                f'SUCESSO ao inserir TAE e o seu relacionamento com uma unidade: {row["matricula"]}'
+            )
+        except ServiceUnavailable as e:
+            log.error(
+                f"ERRO ao inserir TAE e o seu relacionamento com uma unidade. Mensagem de erro: {str(e)}"
+            )
+
+
 insert_unidades()
 insert_docentes()
+insert_taes()
