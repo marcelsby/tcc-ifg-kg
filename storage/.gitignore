@@ -1,0 +1,7 @@
+# Ignore downloaded files
+preprocessed/
+raw/
+transformed/
+
+# Não ignorar o .csv de servidores baixados do Portal da Transparência
+!dados_abertos/extra/

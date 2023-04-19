@@ -1,0 +1,36 @@
+{
+  "files_to_collect": [
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/102",
+      "name_to_save": "servidores.json"
+    },
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/204",
+      "name_to_save": "cursos.json"
+    },
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/205",
+      "name_to_save": "disciplinas_ministradas.json"
+    },
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/207",
+      "name_to_save": "estagios_curriculares.json"
+    },
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/252",
+      "name_to_save": "discentes.json"
+    },
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/402",
+      "name_to_save": "docentes.json"
+    },
+    {
+      "url": "https://barramento.ifg.edu.br/ifg_barramento_ws/ws/502",
+      "name_to_save": "unidades.json"
+    },
+    {
+      "url": "https://sugep.ifg.edu.br/eventos/api/portaltransparencia/editais/IFG",
+      "name_to_save": "editais_iniciacao_cientifica.json"
+    }
+  ]
+}

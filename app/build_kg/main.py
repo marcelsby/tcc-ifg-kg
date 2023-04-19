@@ -1,22 +1,18 @@
-from pathlib import Path
 import logging as log
+from pathlib import Path
 
 import pandas as pd
 from neo4j.exceptions import ServiceUnavailable
 
-from database import (
-    Neo4jConnection,
-    CypherCreateQueryBuilder,
-    Neo4jDataType,
-    create_relationship_query,
-)
-
-conn = Neo4jConnection("bolt://localhost:7687", "neo4j", "test")
-preprocessed_path = Path("../dados_abertos/data/preprocessed")
+from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
+                                   Neo4jDataType, make_neo4j_bolt_connection,
+                                   make_relationship_query)
+from app.utils.environment import Environment
+from app.utils.storage import Storage
 
 
-def insert_unidades():
-    unidades_csv = preprocessed_path / "unidades.csv"
+def _insert_unidades(conn: Neo4jConnection, preprocessed_dir: Path):
+    unidades_csv = preprocessed_dir / "unidades.csv"
     unidades_df = pd.read_csv(unidades_csv, delimiter=";")
 
     query_builder = CypherCreateQueryBuilder("Unidade")
@@ -46,8 +42,8 @@ def insert_unidades():
             )
 
 
-def insert_docentes():
-    docentes_csv = preprocessed_path / "docentes.csv"
+def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
+    docentes_csv = preprocessed_dir / "docentes.csv"
     docentes_df = pd.read_csv(docentes_csv, delimiter=";")
 
     create_query_builder = CypherCreateQueryBuilder(["Docente", "Servidor"])
@@ -58,14 +54,14 @@ def insert_docentes():
             .add_atribute("matricula", row["matricula"])
             .add_atribute("disciplina_ministrada", row["disciplina_ministrada"])
             .add_atribute(
-                "data_ingresso", row["data_ingresso"], vtype=Neo4jDataType.DATE
+                "data_ingresso", row["data_ingresso"], value_type=Neo4jDataType.DATE
             )
             .add_atribute("atribuicao", row["atribuicao"])
             .add_atribute("carga_horaria", row["carga_horaria"])
             .build()
         )
 
-        relationship_query = create_relationship_query(
+        relationship_query = make_relationship_query(
             "Docente",
             "matricula",
             row["matricula"],
@@ -87,8 +83,8 @@ def insert_docentes():
             )
 
 
-def insert_taes():
-    taes_csv = preprocessed_path / "taes.csv"
+def _insert_taes(conn: Neo4jConnection, preprocessed_dir: Path):
+    taes_csv = preprocessed_dir / "taes.csv"
     taes_df = pd.read_csv(taes_csv, delimiter=";")
 
     create_query_builder = CypherCreateQueryBuilder(["TAE", "Servidor"])
@@ -98,14 +94,14 @@ def insert_taes():
             create_query_builder.add_atribute("nome", row["nome"])
             .add_atribute("matricula", row["matricula"])
             .add_atribute(
-                "data_ingresso", row["data_ingresso"], vtype=Neo4jDataType.DATE
+                "data_ingresso", row["data_ingresso"], value_type=Neo4jDataType.DATE
             )
             .add_atribute("atribuicao", row["atribuicao"])
             .add_atribute("carga_horaria", row["carga_horaria"])
             .build()
         )
 
-        relationship_query = create_relationship_query(
+        relationship_query = make_relationship_query(
             "TAE",
             "matricula",
             row["matricula"],
@@ -127,6 +123,16 @@ def insert_taes():
             )
 
 
-insert_unidades()
-insert_docentes()
-insert_taes()
+def execute():
+    neo4j_conn = make_neo4j_bolt_connection(Environment.neo4j_user, Environment.neo4j_password,
+                                            Environment.neo4j_host, Environment.neo4j_port)
+
+    preprocessed_dir = Storage.get_dir("dados_abertos/preprocessed")
+
+    _insert_unidades(neo4j_conn, preprocessed_dir)
+    _insert_docentes(neo4j_conn, preprocessed_dir)
+    _insert_taes(neo4j_conn, preprocessed_dir)
+
+
+if __name__ == '__main__':
+    execute()

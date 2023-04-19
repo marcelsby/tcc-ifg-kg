@@ -1,6 +1,7 @@
 import unittest
 
-from database import CypherCreateQueryBuilder, create_relationship_query
+from app.build_kg.database import (CypherCreateQueryBuilder,
+                                   make_relationship_query)
 
 builder = CypherCreateQueryBuilder("Teste")
 
@@ -21,7 +22,7 @@ class TestDatabaseModule(unittest.TestCase):
         )
 
     def test_create_relationship_query(self):
-        query = create_relationship_query(
+        query = make_relationship_query(
             "Docente",
             "matricula",
             "123456",
