@@ -7,7 +7,7 @@ name = "pypi"
 pipeline = "python -m app.pipeline"
 dados_abertos = "python -m app.dados_abertos.main"
 build_kg = "python -m app.build_kg.main"
-test = "pytest"
+test = "pytest test/"
 fmt = "./scripts/pipenv-format-code.sh"
 
 [packages]
