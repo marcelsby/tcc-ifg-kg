@@ -3,6 +3,13 @@
 Repositório referente ao código-fonte da solução tecnológica proposta pelo meu TCC, intitulado "Construção de um Grafo do Conhecimento Acadêmico a partir da
 estrutura semântica dos dados do IFG".
 
+## Requisitos
+
+- Python 3.10+
+- Pipenv 2022.12.19+
+- Docker 23.0.4+
+- Docker Compose 2.17.2+
+
 ## Executar localmente
 
 1. Clone o projeto:
