@@ -14,7 +14,7 @@ def preprocess():
         if path.is_file() and path.name.endswith(".ipynb"):
             notebooks_to_run.append(path)
 
-    parameters = {"p_storage_dir": str(Storage.get_root())}
+    parameters = {"p_storage_dir": str(Storage.root)}
 
     for notebook_to_run in notebooks_to_run:
         print(f"Running notebook: {notebook_to_run.name}")

@@ -12,7 +12,7 @@ class Storage:
     sem precisar se preocupar com caminhos relativos, etc...
     """
 
-    _STORAGE_DIR = Path("./storage/")
+    _STORAGE_DIR = Path(__file__).parent / "../../storage"
 
     @classmethod
     def get_file(cls, file_path: str) -> Path | FileNotFoundError:
@@ -36,8 +36,9 @@ class Storage:
         return requested_directory
 
     @classmethod
-    def get_root(cls) -> Path:
-        return cls.get_dir(".")
+    @property
+    def root(cls) -> Path:
+        return cls._STORAGE_DIR
 
     @classmethod
     def mkdir(cls, directory_to_be_created: Path):

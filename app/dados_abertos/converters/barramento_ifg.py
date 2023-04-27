@@ -95,3 +95,7 @@ def convert() -> None:
         for metadata in json_to_csv_headers_metadata:
             _json_to_csv(metadata.header, metadata.subject, transformed_path)
             bar()
+
+
+if __name__ == '__main__':
+    convert()

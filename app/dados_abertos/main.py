@@ -1,3 +1,4 @@
+from .collected_cleaners import clean_collected
 from .collector import collect
 from .converters import convert
 from .preprocessor import preprocess
@@ -5,6 +6,7 @@ from .preprocessor import preprocess
 
 def execute():
     collect()
+    clean_collected()
     convert()
     preprocess()
 

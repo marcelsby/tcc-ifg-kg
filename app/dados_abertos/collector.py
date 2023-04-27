@@ -7,9 +7,9 @@ from app.utils.storage import Storage
 
 
 def _get_files_to_collect() -> list[FileToDownload]:
-    collect_metadata_path = Storage.get_file("dados_abertos/collect_metadata.json")
+    collect_metadata_file = Storage.get_file("dados_abertos/collect_metadata.json")
 
-    with open(collect_metadata_path, "r") as f:
+    with open(collect_metadata_file, "r") as f:
         collect_metadata_json = json.load(f)
 
     collect_metadata = []
