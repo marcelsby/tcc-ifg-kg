@@ -3,8 +3,7 @@ from pathlib import Path
 
 from alive_progress import alive_bar
 
-from app.dados_abertos.converters import CsvHeaderMetadata
-from app.utils.messages import print_error
+from app.dados_abertos.converters import ConversionError, CsvHeaderMetadata
 from app.utils.storage import FileExtension, Storage
 from app.utils.validators import validate_json_file
 
@@ -53,34 +52,37 @@ def _json_to_csv(header: str, subject: Path, transformed_path: Path) -> None:
     with open(subject) as f:
         loaded_json = json.load(f)
 
+    converted_rows = []
+
+    for item in loaded_json:
+        row_values = []
+
+        for attribute_index in range(0, attributes_count):
+            value: str = item["itens"][attribute_index]["valor"]
+
+            try:
+                if value in (None, "0.0"):
+                    value = ""
+                elif value == ";":
+                    value = ","
+                elif isinstance(value, str):
+                    value = value.strip()
+                elif not isinstance(value, str):
+                    value = str(value)
+
+                row_values.append(value)
+            except Exception as e:
+                raise ConversionError(f"Falha na conversão do arquivo '{subject.name}'. Valor: {value}", e)
+
+        converted_row = ";".join(row_values)
+        converted_rows.append(converted_row)
+
     try:
         with open(transformed_file, "a") as output_file:
             output_file.write(f"{header}\n")
-
-            for item in loaded_json:
-                converted_row = ""
-
-                for attribute in range(0, attributes_count):
-                    value: str = item["itens"][attribute]["valor"]
-
-                    if value in (None, "0.0"):
-                        value = ""
-                    elif value == ";":
-                        value = ","
-                    else:
-                        value = value.strip()
-
-                    if attribute == attributes_count - 1:
-                        converted_row += value + "\n"
-                    else:
-                        converted_row += value + ";"
-
-                output_file.write(converted_row)
-
+            output_file.write("\n".join(converted_rows))
     except Exception as e:
-        print_error("Erro ao imprimir as linhas no arquivo de saída!")
-        print_error("Mensagem de erro: " + str(e))
-        exit(1)
+        raise ConversionError(f"Falha na escrita do arquivo convertido '{subject.name}'.", e)
 
 
 def convert() -> None:

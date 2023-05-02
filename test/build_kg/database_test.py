@@ -26,13 +26,13 @@ class TestDatabase:
         return CypherCreateQueryBuilder("Test")
 
     def test_single_attribute_cyhper_create_query(self, builder):
-        query = builder.add_atribute("atributo", "valor").build()
+        query = builder.add_property("atributo", "valor").build()
         assert query == 'CREATE (n:Test) SET n.atributo = "valor"'
 
     def test_multiple_attributes_cypher_create_query(self, builder):
         query = (
-            builder.add_atribute("atributo", "valor")
-            .add_atribute("testando", "123")
+            builder.add_property("atributo", "valor")
+            .add_property("testando", "123")
             .build()
         )
 

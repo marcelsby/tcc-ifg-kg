@@ -27,7 +27,7 @@ class Storage:
     def get_dir(cls, directory_path: str, need_create: bool = False) -> Path | NotADirectoryError:
         requested_directory = cls._get_path_from_storage(directory_path)
 
-        if need_create:
+        if need_create and not requested_directory.exists():
             cls.mkdir(requested_directory)
 
         if not need_create and not requested_directory.is_dir():

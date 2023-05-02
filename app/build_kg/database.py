@@ -1,8 +1,8 @@
 import logging as log
 from enum import Enum, auto
 
-import numpy as np
 from neo4j import GraphDatabase
+from pandas import isna
 
 log.basicConfig(
     level=log.INFO,
@@ -61,53 +61,62 @@ class Neo4jDataType(Enum):
     STRING = auto()
     NUMBER = auto()
     DATE = auto()
+    INTEGER = auto()
+
+
+def _cast_property_value(value, value_type: Neo4jDataType) -> str:
+    if value_type is Neo4jDataType.STRING:
+        return f'"{value}"'
+
+    if value_type is Neo4jDataType.DATE:
+        return f'date("{value}")'
+
+    if value_type is Neo4jDataType.INTEGER:
+        return f'{int(value)}'
 
 
 class CypherCreateQueryBuilder:
-    def __init__(self, label: str or [str]):
+    def __init__(self, label: str | list[str]):
         if isinstance(label, list):
             self._label = ":".join(label)
         else:
             self._label = label
 
-        self._attributes = []
+        self._properties = []
         self._BASE_STMT = f"CREATE (n:{self._label}) SET "
 
-    def add_atribute(self, key, value, value_type=Neo4jDataType.STRING):
-        if value is None or value is np.nan:
+    def add_property(self, key, value, value_type=Neo4jDataType.STRING):
+        is_py_false_value = not bool(value)
+
+        if is_py_false_value or isna(value):
             return self
 
-        value = self._cast_attribute(value, value_type)
+        value = _cast_property_value(value, value_type)
 
-        self._attributes.append(f"n.{key} = {value}")
+        self._properties.append(f"n.{key} = {value}")
 
         return self
 
     def build(self) -> str:
         statement = ""
 
-        if len(self._attributes) == 1:
-            statement = self._BASE_STMT + self._attributes[0]
-        elif len(self._attributes) > 1:
-            statement = self._BASE_STMT + ", ".join(self._attributes)
+        if len(self._properties) == 1:
+            statement = self._BASE_STMT + self._properties[0]
+        elif len(self._properties) > 1:
+            statement = self._BASE_STMT + ", ".join(self._properties)
 
         self.reset()
 
         return statement
 
     def reset(self):
-        self._attributes = []
-
-    @staticmethod
-    def _cast_attribute(value, value_type: Neo4jDataType) -> str:
-        if value_type is Neo4jDataType.STRING:
-            return f'"{value}"'
-
-        if value_type is Neo4jDataType.DATE:
-            return f'date("{value}")'
+        self._properties = []
 
 
 def make_relationship_query(
-        a_label, a_attr, a_value, b_label, b_attr, b_value, reltype
+        a_label, a_key, a_value, b_label, b_key, b_value, reltype, a_value_type=Neo4jDataType.STRING, b_value_type=Neo4jDataType.STRING
 ):
-    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE a.{a_attr} = "{a_value}" AND b.{b_attr} = "{b_value}" CREATE (a)-[r:{reltype}]->(b)'
+    a_parsed_value = _cast_property_value(a_value, a_value_type)
+    b_parsed_value = _cast_property_value(b_value, b_value_type)
+
+    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE a.{a_key} = {a_parsed_value} AND b.{b_key} = {b_parsed_value} CREATE (a)-[r:{reltype}]->(b)'

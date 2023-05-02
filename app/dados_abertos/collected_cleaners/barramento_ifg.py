@@ -24,8 +24,19 @@ def _clean_cursos():
         """
         curso["itens"].pop(14)
 
+        """
+        Transforma os valores que estão representados como float para inteiros, o que é a 
+        maneira correta de representá-los.
+        """
+        for item_index in range(10, len(curso["itens"]) - 1):
+            value = curso["itens"][item_index]["valor"]
+
+            if value is not None:
+                parsed_value: int = int(float(value))
+                curso["itens"][item_index]["valor"] = parsed_value
+
     with open(cursos_json_file, "w") as f:
-        json.dump(cursos, f, separators=(",", ":"))
+        json.dump(cursos, f, separators=(",", ":"), ensure_ascii=False)
 
 
 def clean():

@@ -31,3 +31,7 @@ def collect():
         for file in files_to_collect:
             download(file.url, file.name_to_save, destination_path)
             bar()
+
+
+if __name__ == '__main__':
+    collect()
