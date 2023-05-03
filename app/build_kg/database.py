@@ -1,5 +1,6 @@
 import logging as log
 from enum import Enum, auto
+from typing import Any
 
 from neo4j import GraphDatabase
 from pandas import isna
@@ -64,6 +65,58 @@ class Neo4jDataType(Enum):
     INTEGER = auto()
 
 
+class CypherQueryFilterType(str, Enum):
+    EQUAL = "="
+
+
+class CypherQueryFilter:
+    def __init__(self, property_name: str, filter_type: CypherQueryFilterType, value: Any, value_type: Neo4jDataType = Neo4jDataType.STRING, alias: str = "a"):
+        self._property = property_name
+        self._value = _cast_property_value(value, value_type)
+        self._filter_type = filter_type
+        self._alias = alias
+
+    def get(self) -> str:
+        return f"{self._alias}.{self._property} {self._filter_type.value} {self._value}"
+
+    @property
+    def alias(self):
+        return self._alias
+
+    @alias.setter
+    def alias(self, new_alias: str):
+        self._alias = new_alias
+
+
+class CypherQueryFiltersBuilder:
+    def __init__(self):
+        self._filters: list[CypherQueryFilter] = []
+
+    def add_filter(self, query_filter: CypherQueryFilter):
+        self._filters.append(query_filter)
+        return self
+
+    def add_filters(self, query_filters: list[CypherQueryFilter]):
+        for query_filter in query_filters:
+            self.add_filter(query_filter)
+
+        return self
+
+    def build(self, combination_operator="AND") -> str:
+        if combination_operator not in {"AND", "OR"}:
+            raise ValueError("Invalid operator, must be 'AND' or 'OR'")
+
+        filters = []
+
+        for query_filter in self._filters:
+            filters.append(query_filter.get())
+
+        return f" {combination_operator} ".join(filters)
+
+    def reset(self):
+        self._filters = []
+
+
 def _cast_property_value(value, value_type: Neo4jDataType) -> str:
     if value_type is Neo4jDataType.STRING:
         return f'"{value}"'
@@ -113,10 +166,27 @@ class CypherCreateQueryBuilder:
         self._properties = []
 
 
-def make_relationship_query(
-        a_label, a_key, a_value, b_label, b_key, b_value, reltype, a_value_type=Neo4jDataType.STRING, b_value_type=Neo4jDataType.STRING
-):
-    a_parsed_value = _cast_property_value(a_value, a_value_type)
-    b_parsed_value = _cast_property_value(b_value, b_value_type)
+def make_simple_relationship_query(a_label, a_filter: CypherQueryFilter, b_label, b_filter: CypherQueryFilter, reltype):
+    a_filter.alias = "a"
+    b_filter.alias = "b"
 
-    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE a.{a_key} = {a_parsed_value} AND b.{b_key} = {b_parsed_value} CREATE (a)-[r:{reltype}]->(b)'
+    filter_builder = CypherQueryFiltersBuilder()
+
+    filter_builder.add_filters([a_filter, b_filter])
+
+    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filter_builder.build()} CREATE (a)-[r:{reltype}]->(b)'
+
+
+def make_relationship_query(a_label, a_filters: list[CypherQueryFilter], b_label, b_filters: list[CypherQueryFilter], reltype):
+    for query_filter in a_filters:
+        query_filter.alias = "a"
+
+    for query_filter in b_filters:
+        query_filter.alias = "b"
+
+    filter_builder = CypherQueryFiltersBuilder()
+
+    for query_filter in a_filters + b_filters:
+        filter_builder.add_filter(query_filter)
+
+    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filter_builder.build()} CREATE (a)-[r:{reltype}]->(b)'

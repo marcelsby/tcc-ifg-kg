@@ -6,7 +6,8 @@ from neo4j.exceptions import ServiceUnavailable
 
 from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
-                                   make_relationship_query)
+                                   CypherQueryFilter,
+                                   CypherQueryFilterType, make_simple_relationship_query)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
@@ -16,25 +17,21 @@ def _insert_unidades(conn: Neo4jConnection, preprocessed_dir: Path):
     unidades_df = pd.read_csv(unidades_csv, delimiter=";")
 
     query_builder = CypherCreateQueryBuilder("Unidade")
+    attributes_keys = list(unidades_df.columns)
 
-    for index, row in unidades_df.iterrows():
-        builded_query = (
-            query_builder.add_property("nome", row["nome"])
-            .add_property("sigla", row["sigla"])
-            .add_property("logradouro", row["logradouro"])
-            .add_property("numero", row["numero"])
-            .add_property("bairro", row["bairro"])
-            .add_property("cep", row["cep"])
-            .add_property("cidade", row["cidade"])
-            .add_property("site", row["site"])
-            .add_property("telefone", row["telefone"])
-            .add_property("email", row["email"])
-            .add_property("cnpj", row["cnpj"])
-            .add_property("uasg", row["uasg"])
-            .build()
-        )
+    for _, row in unidades_df.iterrows():
+        for key in attributes_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key == "uasg":
+                value_type = Neo4jDataType.INTEGER
+
+            query_builder.add_property(key, row[key], value_type)
+
+        query = query_builder.build()
+
         try:
-            conn.query(builded_query)
+            conn.query(query)
             log.info(f'SUCESSO ao inserir unidade: {row["sigla"]}')
         except ServiceUnavailable as e:
             log.error(
@@ -48,26 +45,30 @@ def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
 
     create_query_builder = CypherCreateQueryBuilder(["Docente", "Servidor"])
 
-    for index, row in docentes_df.iterrows():
-        create_query = (
-            create_query_builder.add_property("nome", row["nome"])
-            .add_property("matricula", row["matricula"])
-            .add_property("disciplina_ministrada", row["disciplina_ministrada"])
-            .add_property(
-                "data_ingresso", row["data_ingresso"], value_type=Neo4jDataType.DATE
-            )
-            .add_property("atribuicao", row["atribuicao"])
-            .add_property("carga_horaria", row["carga_horaria"])
-            .build()
-        )
+    attributes_keys = list(docentes_df.columns)
+    attributes_keys.remove("campus")
 
-        relationship_query = make_relationship_query(
+    for _, row in docentes_df.iterrows():
+        for key in attributes_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key == "matricula":
+                value_type = Neo4jDataType.INTEGER
+            elif key == "data_ingresso":
+                value_type = Neo4jDataType.DATE
+
+            create_query_builder.add_property(key, row[key], value_type)
+
+        create_query = create_query_builder.build()
+
+        docente_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL, row["matricula"], Neo4jDataType.INTEGER)
+        unidade_campus_filter = CypherQueryFilter("nome", CypherQueryFilterType.EQUAL, row["campus"])
+
+        relationship_query = make_simple_relationship_query(
             "Docente",
-            "matricula",
-            row["matricula"],
+            docente_matricula_filter,
             "Unidade",
-            "nome",
-            row["campus"],
+            unidade_campus_filter,
             "PART_OF",
         )
 
@@ -89,26 +90,31 @@ def _insert_taes(conn: Neo4jConnection, preprocessed_dir: Path):
 
     create_query_builder = CypherCreateQueryBuilder(["TAE", "Servidor"])
 
-    for index, row in taes_df.iterrows():
-        create_query = (
-            create_query_builder.add_property("nome", row["nome"])
-            .add_property("matricula", row["matricula"])
-            .add_property(
-                "data_ingresso", row["data_ingresso"], value_type=Neo4jDataType.DATE
-            )
-            .add_property("atribuicao", row["atribuicao"])
-            .add_property("carga_horaria", row["carga_horaria"])
-            .build()
-        )
+    attributes_keys = list(taes_df.columns)
+    attributes_keys.remove("uorg_exercicio")
 
-        relationship_query = make_relationship_query(
+    for _, row in taes_df.iterrows():
+        for key in attributes_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key == "matricula":
+                value_type = Neo4jDataType.INTEGER
+            elif key == "data_ingresso":
+                value_type = Neo4jDataType.DATE
+
+            create_query_builder.add_property(key, row[key], value_type)
+
+        create_query = create_query_builder.build()
+
+        tae_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL, row["matricula"])
+        unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["uorg_exercicio"])
+
+        relationship_query = make_simple_relationship_query(
             "TAE",
-            "matricula",
-            row["matricula"],
+            tae_matricula_filter,
             "Unidade",
-            "sigla",
-            row["uorg_exercicio"],
-            "PART_OF",
+            unidade_sigla_filter,
+            "PART_OF"
         )
 
         try:
@@ -130,29 +136,28 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
     create_query_builder = CypherCreateQueryBuilder("Curso")
 
     attribute_keys = list(cursos_df.columns)
+    attribute_keys.remove("campus")
 
     for _, row in cursos_df.iterrows():
         for key in attribute_keys:
-            value = row[key]
+            value_type = Neo4jDataType.STRING
 
-            if key == "campus":
-                continue
-            elif key in ["codigo", "qtd_vagas_ano", "qtd_semestres"] or key.startswith("ch_"):
-                create_query_builder.add_property(key, value, Neo4jDataType.INTEGER)
-            else:
-                create_query_builder.add_property(key, value)
+            if key in ["codigo", "qtd_vagas_ano", "qtd_semestres"] or key.startswith("ch_"):
+                value_type = Neo4jDataType.INTEGER
+
+            create_query_builder.add_property(key, row[key], value_type)
 
         create_query = create_query_builder.build()
 
-        curso_to_unidade_relationship_query = make_relationship_query(
+        curso_codigo_filter = CypherQueryFilter("codigo", CypherQueryFilterType.EQUAL, row["codigo"], Neo4jDataType.INTEGER)
+        unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["campus"])
+
+        curso_to_unidade_relationship_query = make_simple_relationship_query(
             "Curso",
-            "codigo",
-            row["codigo"],
+            curso_codigo_filter,
             "Unidade",
-            "sigla",
-            row["campus"],
+            unidade_sigla_filter,
             "OFFERED_AT",
-            a_value_type=Neo4jDataType.INTEGER,
         )
 
         try:
@@ -166,15 +171,12 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
                 f"ERRO ao inserir curso e o seu relacionamento com uma unidade. Mensagem de erro: {str(e)}"
             )
 
-        unidade_to_curso_relationship_query = make_relationship_query(
+        unidade_to_curso_relationship_query = make_simple_relationship_query(
             "Unidade",
-            "sigla",
-            row["campus"],
+            unidade_sigla_filter,
             "Curso",
-            "codigo",
-            row["codigo"],
+            curso_codigo_filter,
             "OFFERS",
-            b_value_type=Neo4jDataType.INTEGER
         )
 
         try:
