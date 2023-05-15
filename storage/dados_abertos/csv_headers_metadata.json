@@ -23,7 +23,7 @@
     {
       "raw_file_extension": "json",
       "subject": "disciplinas_ministradas",
-      "header": "cod_pauta;campus_ofertante;ano_letivo;periodo;turma;curso;modalidade;nivel;departamento;nome;ch;tipo;nome_docente;siape_docente;nome_auxiliar;siape_auxiliar"
+      "header": "codigo_pauta;campus_ofertante;ano_letivo;periodo_letivo;turma;periodo_disciplina;nome_curso;modalidade;nivel;departamento;codigo_disciplina;sigla_disciplina;nome_e_carga_horaria;periodo_oferta;nome_e_siape_docente;nome_e_siape_docente_auxiliar"
     },
     {
       "raw_file_extension": "json",
