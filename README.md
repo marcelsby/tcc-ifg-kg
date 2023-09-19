@@ -41,16 +41,16 @@ da maneira que ele ficará após a execução do comando acima.
   docker compose up -d neo4j
 ```
 
-5. Instale as dependências da aplicação:
+5. Entre no virtualenv criado pelo pipenv:
+
+```bash
+pipenv shell
+```
+
+6. Instale as dependências da aplicação:
 
 ```bash
   pipenv install
-```
-
-6. Entre no virtualenv criado pelo pipenv:
-
-```bash
-  pipenv shell
 ```
 
 7. Execute a aplicação e aguarde a conclusão do processo:
