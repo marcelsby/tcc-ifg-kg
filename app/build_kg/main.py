@@ -4,10 +4,10 @@ from pathlib import Path
 import pandas as pd
 from neo4j.exceptions import ServiceUnavailable
 
-from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
+from app.build_kg.database import (CypherCreateQueryBuilder, CypherQueryFilter,
+                                   CypherQueryFilterType, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
-                                   CypherQueryFilter,
-                                   CypherQueryFilterType, make_simple_relationship_query)
+                                   make_simple_relationship_query)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
@@ -61,7 +61,8 @@ def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
 
         create_query = create_query_builder.build()
 
-        docente_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL, row["matricula"], Neo4jDataType.INTEGER)
+        docente_matricula_filter = CypherQueryFilter(
+            "matricula", CypherQueryFilterType.EQUAL, row["matricula"], Neo4jDataType.INTEGER)
         unidade_campus_filter = CypherQueryFilter("nome", CypherQueryFilterType.EQUAL, row["campus"])
 
         relationship_query = make_simple_relationship_query(
@@ -149,7 +150,8 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
 
         create_query = create_query_builder.build()
 
-        curso_codigo_filter = CypherQueryFilter("codigo", CypherQueryFilterType.EQUAL, row["codigo"], Neo4jDataType.INTEGER)
+        curso_codigo_filter = CypherQueryFilter(
+            "codigo", CypherQueryFilterType.EQUAL, row["codigo"], Neo4jDataType.INTEGER)
         unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["campus"])
 
         curso_to_unidade_relationship_query = make_simple_relationship_query(

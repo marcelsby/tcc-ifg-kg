@@ -53,7 +53,7 @@ def _clean_disciplinas_ministradas():
         contando que o dicionário de dados especifica 16 campos, quando os itens do dataset foram analisados
         descobriu-se que na verdade estão presentes 17 campos, entretanto esse novo campo basicamente repete
         alguns dados já apresentados anteriormente (turma, nome da disciplina e carga horária da disciplina). 
-        
+
         No caso das disciplinas que estavam com o nome incompleto e com falhas foi possível consultar seu nome completo nesse campo
         adicional e corrigir essas inconsistências.
         """
