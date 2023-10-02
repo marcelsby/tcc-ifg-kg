@@ -152,6 +152,7 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
 
         curso_codigo_filter = CypherQueryFilter(
             "codigo", CypherQueryFilterType.EQUAL, row["codigo"], Neo4jDataType.INTEGER)
+
         unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["campus"])
 
         curso_to_unidade_relationship_query = make_simple_relationship_query(
@@ -191,6 +192,120 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
             )
 
 
+def _insert_disciplinas(conn: Neo4jConnection, preprocessed_dir: Path):
+    disciplinas_csv = preprocessed_dir / "disciplinas.csv"
+    disciplinas_df = pd.read_csv(disciplinas_csv, delimiter=";")
+
+    create_query_builder = CypherCreateQueryBuilder("Disciplina")
+
+    attribute_keys = list(disciplinas_df.columns)
+    attribute_keys.remove("codigo_curso")
+
+    for _, row in disciplinas_df.iterrows():
+        for key in attribute_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key in ["codigo", "periodo", "carga_horaria"]:
+                value_type = Neo4jDataType.INTEGER
+
+            create_query_builder.add_property(key, row[key], value_type)
+
+        create_query = create_query_builder.build()
+
+        disciplina_codigo_filter = CypherQueryFilter(
+            "codigo", CypherQueryFilterType.EQUAL, row["codigo"], Neo4jDataType.INTEGER
+        )
+
+        curso_codigo_filter = CypherQueryFilter(
+            "codigo", CypherQueryFilterType.EQUAL, row["codigo_curso"], Neo4jDataType.INTEGER
+        )
+
+        disciplina_to_curso_relationship_query = make_simple_relationship_query(
+            "Disciplina",
+            disciplina_codigo_filter,
+            "Curso",
+            curso_codigo_filter,
+            "TAUGHT_AT"
+        )
+
+        curso_to_disciplina_relationship_query = make_simple_relationship_query(
+            "Curso",
+            curso_codigo_filter,
+            "Disciplina",
+            disciplina_codigo_filter,
+            "OFFERS"
+        )
+
+        try:
+            conn.query(create_query)
+            conn.query(disciplina_to_curso_relationship_query)
+            log.info(
+                f'SUCESSO ao inserir disciplina e o seu relacionamento com um curso: {row["codigo"]} -> {row["codigo_curso"]}'
+            )
+        except ServiceUnavailable as e:
+            log.error(
+                f"ERRO ao inserir disciplina e o seu relacionamento com um curso. Mensagem de erro: {str(e)}"
+            )
+
+        try:
+            conn.query(curso_to_disciplina_relationship_query)
+            log.info(
+                f'SUCESSO ao inserir o relacionamento de um curso com uma disciplina: {row["codigo_curso"]} -> {row["codigo"]}'
+            )
+        except ServiceUnavailable as e:
+            log.error(
+                f"ERRO ao inserir o relacionamento de um curso com uma disciplina. Mensagem de erro: {str(e)}"
+            )
+
+
+def _insert_disciplinas_ministradas(conn: Neo4jConnection, preprocessed_dir: Path):
+    disciplinas_ministradas_csv = preprocessed_dir / "disciplinas_ministradas.csv"
+    disciplinas_ministradas_df = pd.read_csv(disciplinas_ministradas_csv, delimiter=";")
+
+    create_query_builder = CypherCreateQueryBuilder("DisciplinaMinistrada")
+
+    attribute_keys = list(disciplinas_ministradas_df.columns)
+    attribute_keys.remove("codigo_disciplina")
+
+    for _, row in disciplinas_ministradas_df.iterrows():
+        for key in attribute_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key in ["codigo", "ano_letivo", "periodo_letivo"]:
+                value_type = Neo4jDataType.INTEGER
+
+            create_query_builder.add_property(key, row[key], value_type)
+
+        create_query = create_query_builder.build()
+
+        disciplina_ministrada_codigo_filter = CypherQueryFilter(
+            "codigo", CypherQueryFilterType.EQUAL, row["codigo"], Neo4jDataType.INTEGER
+        )
+
+        disciplina_codigo_filter = CypherQueryFilter(
+            "codigo", CypherQueryFilterType.EQUAL, row["codigo_disciplina"], Neo4jDataType.INTEGER
+        )
+
+        disciplina_ministrada_to_disciplina_relationship_query = make_simple_relationship_query(
+            "DisciplinaMinistrada",
+            disciplina_ministrada_codigo_filter,
+            "Disciplina",
+            disciplina_codigo_filter,
+            "DEFINED_BY"
+        )
+
+        try:
+            conn.query(create_query)
+            conn.query(disciplina_ministrada_to_disciplina_relationship_query)
+            log.info(
+                f'SUCESSO ao inserir disciplina ministrada e o seu relacionamento com uma disciplina: {row["codigo"]} -> {row["codigo_disciplina"]}'
+            )
+        except ServiceUnavailable as e:
+            log.error(
+                f"ERRO ao inserir disciplina ministrada e o seu relacionamento com uma disciplina. Mensagem de erro: {str(e)}"
+            )
+
+
 def execute():
     neo4j_conn = make_neo4j_bolt_connection(Environment.neo4j_user, Environment.neo4j_password,
                                             Environment.neo4j_host, Environment.neo4j_port)
@@ -201,6 +316,8 @@ def execute():
     _insert_docentes(neo4j_conn, preprocessed_dir)
     _insert_taes(neo4j_conn, preprocessed_dir)
     _insert_cursos(neo4j_conn, preprocessed_dir)
+    _insert_disciplinas(neo4j_conn, preprocessed_dir)
+    _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
 
 
 if __name__ == '__main__':
