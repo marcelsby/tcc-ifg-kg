@@ -2,7 +2,7 @@ import logging as log
 from enum import Enum, auto
 from typing import Any
 
-from neo4j import GraphDatabase
+from neo4j import Driver, GraphDatabase
 from pandas import isna
 
 log.basicConfig(
@@ -10,6 +10,11 @@ log.basicConfig(
     format="[%(asctime)s] [%(levelname)s]: %(message)s",
     datefmt="%d/%m/%Y %I:%M:%S",
 )
+
+
+class DriverNotInitialized(Exception):
+    def __init__(self):
+        super().__init__("The driver is not initialized, then isn't possible complete the requested operation.")
 
 
 class Neo4jConnection:
@@ -26,12 +31,15 @@ class Neo4jConnection:
         except Exception as e:
             log.critical(str(e))
 
+    def __del__(self):
+        self.close()
+
     def close(self):
-        if self._driver is not None:
+        if self.is_driver_initialized:
             self._driver.close()
 
     def query(self, query, db=None):
-        assert self._driver is not None, "Driver not initialized!"
+        self.check_driver_initialized()
 
         session = None
         response = None
@@ -50,6 +58,20 @@ class Neo4jConnection:
                 session.close()
 
         return response
+
+    @property
+    def is_driver_initialized(self) -> bool:
+        return self._driver is not None
+
+    def check_driver_initialized(self) -> None | DriverNotInitialized:
+        if not self.is_driver_initialized:
+            raise DriverNotInitialized()
+        else:
+            return None
+
+    @property
+    def driver(self) -> Driver:
+        return self._driver
 
 
 def make_neo4j_bolt_connection(user: str, password: str, host: str = "localhost", port: int = 7687):
@@ -70,7 +92,8 @@ class CypherQueryFilterType(str, Enum):
 
 
 class CypherQueryFilter:
-    def __init__(self, property_name: str, filter_type: CypherQueryFilterType, value: Any, value_type: Neo4jDataType = Neo4jDataType.STRING, alias: str = "a"):
+    def __init__(self, property_name: str, filter_type: CypherQueryFilterType, value: Any,
+                 value_type: Neo4jDataType = Neo4jDataType.STRING, alias: str = "a"):
         self._property = property_name
         self._value = _cast_property_value(value, value_type)
         self._filter_type = filter_type
@@ -177,7 +200,8 @@ def make_simple_relationship_query(a_label, a_filter: CypherQueryFilter, b_label
     return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filter_builder.build()} CREATE (a)-[r:{reltype}]->(b)'
 
 
-def make_relationship_query(a_label, a_filters: list[CypherQueryFilter], b_label, b_filters: list[CypherQueryFilter], reltype):
+def make_relationship_query(a_label, a_filters: list[CypherQueryFilter], b_label, b_filters: list[CypherQueryFilter],
+                            reltype):
     for query_filter in a_filters:
         query_filter.alias = "a"
 
@@ -190,3 +214,13 @@ def make_relationship_query(a_label, a_filters: list[CypherQueryFilter], b_label
         filter_builder.add_filter(query_filter)
 
     return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filter_builder.build()} CREATE (a)-[r:{reltype}]->(b)'
+
+
+def run_transactions_batch(conn: Neo4jConnection, transactions_batch: list[tuple]):
+    conn.check_driver_initialized()
+
+    with conn.driver.session() as session:
+        with session.begin_transaction() as tx:
+            for transaction in transactions_batch:
+                for query in transaction:
+                    tx.run(query)
