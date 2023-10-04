@@ -1,15 +1,14 @@
 import concurrent.futures
-import logging as log
 import time
 from pathlib import Path
 
 import pandas as pd
-from neo4j.exceptions import ServiceUnavailable
 
-from app.build_kg.database import (CypherCreateQueryBuilder, CypherQueryFilter,
+from app.build_kg.database import (CypherCreateQueryBuilder,
+                                   CypherJsonLikeProperty, CypherQueryFilter,
                                    CypherQueryFilterType, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
-                                   make_simple_relationship_query,
+                                   make_relationship_query,
                                    run_transactions_batch)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
@@ -29,7 +28,7 @@ def _insert_unidades(conn: Neo4jConnection, preprocessed_dir: Path):
             if key == "uasg":
                 value_type = Neo4jDataType.INTEGER
 
-            create_query_builder.add_property(key, row[key], value_type)
+            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
         create_query = create_query_builder.build()
 
@@ -57,7 +56,7 @@ def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
                 elif key == "data_ingresso":
                     value_type = Neo4jDataType.DATE
 
-                create_query_builder.add_property(key, row[key], value_type)
+                _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
             create_query = create_query_builder.build()
 
@@ -66,7 +65,7 @@ def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
 
             unidade_campus_filter = CypherQueryFilter("nome", CypherQueryFilterType.EQUAL, row["campus"])
 
-            relationship_query = make_simple_relationship_query(
+            relationship_query = make_relationship_query(
                 "Docente",
                 docente_matricula_filter,
                 "Unidade",
@@ -103,14 +102,14 @@ def _insert_taes(conn: Neo4jConnection, preprocessed_dir: Path):
                 elif key == "data_ingresso":
                     value_type = Neo4jDataType.DATE
 
-                create_query_builder.add_property(key, row[key], value_type)
+                _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
             create_query = create_query_builder.build()
 
             tae_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL, row["matricula"])
             unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["uorg_exercicio"])
 
-            relationship_query = make_simple_relationship_query(
+            relationship_query = make_relationship_query(
                 "TAE",
                 tae_matricula_filter,
                 "Unidade",
@@ -145,7 +144,7 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
                 if key in ["codigo", "qtd_vagas_ano", "qtd_semestres"] or key.startswith("ch_"):
                     value_type = Neo4jDataType.INTEGER
 
-                create_query_builder.add_property(key, row[key], value_type)
+                _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
             create_query = create_query_builder.build()
 
@@ -154,7 +153,7 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
 
             unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["campus"])
 
-            curso_to_unidade_relationship_query = make_simple_relationship_query(
+            curso_to_unidade_relationship_query = make_relationship_query(
                 "Curso",
                 curso_codigo_filter,
                 "Unidade",
@@ -162,7 +161,7 @@ def _insert_cursos(conn: Neo4jConnection, preprocessed_dir: Path):
                 "OFFERED_AT",
             )
 
-            unidade_to_curso_relationship_query = make_simple_relationship_query(
+            unidade_to_curso_relationship_query = make_relationship_query(
                 "Unidade",
                 unidade_sigla_filter,
                 "Curso",
@@ -199,7 +198,7 @@ def _insert_disciplinas(conn: Neo4jConnection, preprocessed_dir: Path):
             if key in ["codigo", "periodo", "carga_horaria"]:
                 value_type = Neo4jDataType.INTEGER
 
-            create_query_builder.add_property(key, row[key], value_type)
+            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
         create_query = create_query_builder.build()
 
@@ -211,7 +210,7 @@ def _insert_disciplinas(conn: Neo4jConnection, preprocessed_dir: Path):
             "codigo", CypherQueryFilterType.EQUAL, row["codigo_curso"], Neo4jDataType.INTEGER
         )
 
-        disciplina_to_curso_relationship_query = make_simple_relationship_query(
+        disciplina_to_curso_relationship_query = make_relationship_query(
             "Disciplina",
             disciplina_codigo_filter,
             "Curso",
@@ -219,7 +218,7 @@ def _insert_disciplinas(conn: Neo4jConnection, preprocessed_dir: Path):
             "TAUGHT_AT"
         )
 
-        curso_to_disciplina_relationship_query = make_simple_relationship_query(
+        curso_to_disciplina_relationship_query = make_relationship_query(
             "Curso",
             curso_codigo_filter,
             "Disciplina",
@@ -265,7 +264,7 @@ def _insert_disciplinas_ministradas(conn: Neo4jConnection, preprocessed_dir: Pat
             if key in ["codigo", "ano_letivo", "periodo_letivo"]:
                 value_type = Neo4jDataType.INTEGER
 
-            create_query_builder.add_property(key, row[key], value_type)
+            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
         create_query = create_query_builder.build()
 
@@ -277,7 +276,7 @@ def _insert_disciplinas_ministradas(conn: Neo4jConnection, preprocessed_dir: Pat
             "codigo", CypherQueryFilterType.EQUAL, row["codigo_disciplina"], Neo4jDataType.INTEGER
         )
 
-        disciplina_ministrada_to_disciplina_relationship_query = make_simple_relationship_query(
+        disciplina_ministrada_to_disciplina_relationship_query = make_relationship_query(
             "DisciplinaMinistrada",
             disciplina_ministrada_codigo_filter,
             "Disciplina",
@@ -303,18 +302,121 @@ def _insert_disciplinas_ministradas(conn: Neo4jConnection, preprocessed_dir: Pat
     print(f"Disciplinas Ministradas ({disciplinas_ministradas_df.shape[0]} linhas): {end - start}s")
 
 
+def _insert_disciplinas_ministradas_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
+    start = time.perf_counter()
+
+    disciplinas_ministradas_docentes_csv = preprocessed_dir / "disciplinas_ministradas_docentes.csv"
+    disciplinas_ministradas_docentes_df = pd.read_csv(disciplinas_ministradas_docentes_csv, delimiter=";")
+
+    transactions_queries: list[tuple] = []
+
+    for _, row in disciplinas_ministradas_docentes_df.iterrows():
+        transactions: list[tuple] = []
+
+        def as_auxiliary_relationship_prop(as_auxiliary: bool):
+            return CypherJsonLikeProperty("as_auxiliary", as_auxiliary,
+                                          Neo4jDataType.BOOL)
+
+        def docente_siape_query_filter(siape_field_name):
+            return CypherQueryFilter(
+                "matricula",
+                CypherQueryFilterType.EQUAL,
+                row[siape_field_name],
+                Neo4jDataType.INTEGER
+            )
+
+        disciplina_ministrada_codigo_query_filter = CypherQueryFilter(
+            "codigo",
+            CypherQueryFilterType.EQUAL,
+            row["codigo_pauta"],
+            Neo4jDataType.INTEGER
+        )
+
+        if not pd.isna(row["siape_docente_principal"]):
+            docente_to_disciplina_ministrada_relationship_query = make_relationship_query(
+                "Docente",
+                docente_siape_query_filter("siape_docente_principal"),
+                "DisciplinaMinistrada",
+                disciplina_ministrada_codigo_query_filter,
+                "TAUGHT",
+                [as_auxiliary_relationship_prop(False)]
+            )
+
+            disciplina_ministrada_to_docente_relationship_query = make_relationship_query(
+                "DisciplinaMinistrada",
+                disciplina_ministrada_codigo_query_filter,
+                "Docente",
+                docente_siape_query_filter("siape_docente_principal"),
+                "TAUGHT_BY",
+                [as_auxiliary_relationship_prop(False)]
+            )
+
+            transactions.append((docente_to_disciplina_ministrada_relationship_query,
+                                 disciplina_ministrada_to_docente_relationship_query))
+
+        if not pd.isna(row["siape_docente_auxiliar"]):
+            docente_to_disciplina_ministrada_relationship_query = make_relationship_query(
+                "Docente",
+                docente_siape_query_filter("siape_docente_auxiliar"),
+                "DisciplinaMinistrada",
+                disciplina_ministrada_codigo_query_filter,
+                "TAUGHT",
+                [as_auxiliary_relationship_prop(True)]
+            )
+
+            disciplina_ministrada_to_docente_relationship_query = make_relationship_query(
+                "DisciplinaMinistrada",
+                disciplina_ministrada_codigo_query_filter,
+                "Docente",
+                docente_siape_query_filter("siape_docente_auxiliar"),
+                "TAUGHT_BY",
+                [as_auxiliary_relationship_prop(True)]
+            )
+
+            transactions.append((docente_to_disciplina_ministrada_relationship_query,
+                                 disciplina_ministrada_to_docente_relationship_query))
+
+        transactions_queries += transactions
+
+    batch_size = 2000
+
+    transactions_batches = [transactions_queries[start_batch_index: start_batch_index + batch_size]
+                            for start_batch_index in range(0, len(transactions_queries), batch_size)]
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        futures = [executor.submit(run_transactions_batch, conn, batch) for batch in transactions_batches]
+
+        concurrent.futures.wait(futures)
+
+    end = time.perf_counter()
+
+    print(f"Disciplinas Ministradas Docentes ({disciplinas_ministradas_docentes_df.shape[0]} linhas): {end - start}s")
+
+
+def _cqb_add_property_when_value_not_absent(query_builder: CypherCreateQueryBuilder, key, value,
+                                            value_type: Neo4jDataType):
+    if not pd.isna(value):
+        query_builder.add_property(key, value, value_type)
+
+    return query_builder
+
+
 def execute():
     neo4j_conn = make_neo4j_bolt_connection(Environment.neo4j_user, Environment.neo4j_password,
                                             Environment.neo4j_host, Environment.neo4j_port)
 
-    preprocessed_dir = Storage.get_dir("dados_abertos/preprocessed")
+    try:
+        preprocessed_dir = Storage.get_dir("dados_abertos/preprocessed")
 
-    _insert_unidades(neo4j_conn, preprocessed_dir)
-    _insert_docentes(neo4j_conn, preprocessed_dir)
-    _insert_taes(neo4j_conn, preprocessed_dir)
-    _insert_cursos(neo4j_conn, preprocessed_dir)
-    _insert_disciplinas(neo4j_conn, preprocessed_dir)
-    _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
+        _insert_unidades(neo4j_conn, preprocessed_dir)
+        _insert_docentes(neo4j_conn, preprocessed_dir)
+        _insert_taes(neo4j_conn, preprocessed_dir)
+        _insert_cursos(neo4j_conn, preprocessed_dir)
+        _insert_disciplinas(neo4j_conn, preprocessed_dir)
+        _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
+        _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
+    finally:
+        neo4j_conn.close()
 
 
 if __name__ == '__main__':

@@ -3,7 +3,6 @@ from enum import Enum, auto
 from typing import Any
 
 from neo4j import Driver, GraphDatabase
-from pandas import isna
 
 log.basicConfig(
     level=log.INFO,
@@ -31,12 +30,9 @@ class Neo4jConnection:
         except Exception as e:
             log.critical(str(e))
 
-    def __del__(self):
-        self.close()
-
     def close(self):
         if self.is_driver_initialized:
-            self._driver.close()
+            self.driver.close()
 
     def query(self, query, db=None):
         self.check_driver_initialized()
@@ -61,7 +57,7 @@ class Neo4jConnection:
 
     @property
     def is_driver_initialized(self) -> bool:
-        return self._driver is not None
+        return self.driver is not None
 
     def check_driver_initialized(self) -> None | DriverNotInitialized:
         if not self.is_driver_initialized:
@@ -83,8 +79,18 @@ def make_neo4j_bolt_connection(user: str, password: str, host: str = "localhost"
 class Neo4jDataType(Enum):
     STRING = auto()
     NUMBER = auto()
+    BOOL = auto()
     DATE = auto()
     INTEGER = auto()
+
+
+class CypherJsonLikeProperty:
+    def __init__(self, key: str, value: Any, value_type: Neo4jDataType):
+        self._key = key
+        self._value = _cast_property_value(value, value_type)
+
+    def get(self) -> str:
+        return f"{self._key}: {self._value}"
 
 
 class CypherQueryFilterType(str, Enum):
@@ -134,10 +140,33 @@ class CypherQueryFiltersBuilder:
         for query_filter in self._filters:
             filters.append(query_filter.get())
 
+        self.reset()
+
         return f" {combination_operator} ".join(filters)
 
     def reset(self):
         self._filters = []
+
+
+class CypherPropertiesBuilder:
+    def __init__(self):
+        self._properties: list[CypherJsonLikeProperty] = []
+
+    def add_properties(self, new_properties: list[CypherJsonLikeProperty]):
+        self._properties += new_properties
+
+        return self
+
+    def build(self):
+        properties = [prop.get() for prop in self._properties]
+        properties = "{" + ", ".join(properties) + "}"
+
+        self.reset()
+
+        return properties
+
+    def reset(self):
+        self._properties = []
 
 
 def _cast_property_value(value, value_type: Neo4jDataType) -> str:
@@ -149,6 +178,13 @@ def _cast_property_value(value, value_type: Neo4jDataType) -> str:
 
     if value_type is Neo4jDataType.INTEGER:
         return f'{int(value)}'
+
+    if value_type is Neo4jDataType.BOOL:
+        if not isinstance(value, bool):
+            raise TypeError(
+                "The provided value isn't a explicitly boolean. Please provide a value that is a 'bool' instance.")
+        else:
+            return "true" if value else "false"
 
 
 class CypherCreateQueryBuilder:
@@ -162,11 +198,6 @@ class CypherCreateQueryBuilder:
         self._BASE_STMT = f"CREATE (n:{self._label}) SET "
 
     def add_property(self, key, value, value_type=Neo4jDataType.STRING):
-        is_py_false_value = not bool(value)
-
-        if is_py_false_value or isna(value):
-            return self
-
         value = _cast_property_value(value, value_type)
 
         self._properties.append(f"n.{key} = {value}")
@@ -189,31 +220,31 @@ class CypherCreateQueryBuilder:
         self._properties = []
 
 
-def make_simple_relationship_query(a_label, a_filter: CypherQueryFilter, b_label, b_filter: CypherQueryFilter, reltype):
-    a_filter.alias = "a"
-    b_filter.alias = "b"
+def make_relationship_query(a_label, a_filters: list[CypherQueryFilter] | CypherQueryFilter, b_label,
+                            b_filters: list[CypherQueryFilter] | CypherQueryFilter, rel_label: str,
+                            rel_props: list[CypherJsonLikeProperty] = None):
+    if isinstance(a_filters, CypherQueryFilter):
+        a_filters = [a_filters]
 
-    filter_builder = CypherQueryFiltersBuilder()
+    if isinstance(b_filters, CypherQueryFilter):
+        b_filters = [b_filters]
 
-    filter_builder.add_filters([a_filter, b_filter])
+    a_filters = _replace_filters_alias(a_filters, "a")
+    b_filters = _replace_filters_alias(b_filters, "b")
 
-    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filter_builder.build()} CREATE (a)-[r:{reltype}]->(b)'
-
-
-def make_relationship_query(a_label, a_filters: list[CypherQueryFilter], b_label, b_filters: list[CypherQueryFilter],
-                            reltype):
-    for query_filter in a_filters:
-        query_filter.alias = "a"
-
-    for query_filter in b_filters:
-        query_filter.alias = "b"
-
-    filter_builder = CypherQueryFiltersBuilder()
+    filters_builder = CypherQueryFiltersBuilder()
 
     for query_filter in a_filters + b_filters:
-        filter_builder.add_filter(query_filter)
+        filters_builder.add_filter(query_filter)
 
-    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filter_builder.build()} CREATE (a)-[r:{reltype}]->(b)'
+    rel_props_str = ''
+
+    if rel_props is not None:
+        rel_props_builder = CypherPropertiesBuilder()
+        rel_props_builder.add_properties(rel_props)
+        rel_props_str = f" {rel_props_builder.build()}"
+
+    return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filters_builder.build()} CREATE (a)-[r:{rel_label}{rel_props_str}]->(b)'
 
 
 def run_transactions_batch(conn: Neo4jConnection, transactions_batch: list[tuple]):
@@ -224,3 +255,10 @@ def run_transactions_batch(conn: Neo4jConnection, transactions_batch: list[tuple
             for transaction in transactions_batch:
                 for query in transaction:
                     tx.run(query)
+
+
+def _replace_filters_alias(query_filters: list[CypherQueryFilter], alias: str) -> list[CypherQueryFilter]:
+    for query_filter in query_filters:
+        query_filter.alias = alias
+
+    return query_filters

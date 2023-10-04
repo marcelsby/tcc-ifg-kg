@@ -2,8 +2,9 @@ from dataclasses import dataclass
 
 import pytest
 
-from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
-                                   make_neo4j_bolt_connection,
+from app.build_kg.database import (CypherCreateQueryBuilder, CypherQueryFilter,
+                                   CypherQueryFilterType, Neo4jConnection,
+                                   Neo4jDataType, make_neo4j_bolt_connection,
                                    make_relationship_query)
 
 
@@ -39,17 +40,26 @@ class TestDatabase:
         assert query == 'CREATE (n:Test) SET n.atributo = "valor", n.testando = "123"'
 
     def test_create_relationship_query(self):
+        docente_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL,
+                                                     123456, Neo4jDataType.INTEGER)
+
+        docente_data_ingresso_filter = CypherQueryFilter("data_ingresso", CypherQueryFilterType.EQUAL,
+                                                         "2004-02-17", Neo4jDataType.DATE)
+
+        unidade_nome_filter = CypherQueryFilter("nome", CypherQueryFilterType.EQUAL,
+                                                "CÂMPUS ÁGUAS LINDAS")
+
+        unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, "LIN")
+
         query = make_relationship_query(
             "Docente",
-            "matricula",
-            "123456",
+            [docente_matricula_filter, docente_data_ingresso_filter],
             "Unidade",
-            "nome",
-            "CÂMPUS ÁGUAS LINDAS",
-            "part_of",
+            [unidade_nome_filter, unidade_sigla_filter],
+            "PART_OF",
         )
 
-        assert query == 'MATCH (a:Docente), (b:Unidade) WHERE a.matricula = "123456" AND b.nome = "CÂMPUS ÁGUAS LINDAS" CREATE (a)-[r:part_of]->(b)'
+        assert query == 'MATCH (a:Docente), (b:Unidade) WHERE a.matricula = 123456 AND a.data_ingresso = date("2004-02-17") AND b.nome = "CÂMPUS ÁGUAS LINDAS" AND b.sigla = "LIN" CREATE (a)-[r:PART_OF]->(b)'
 
     def test_make_neo4j_bolt_connection_with_default_parameters(self, mocker, db_credentials):
         # Given
