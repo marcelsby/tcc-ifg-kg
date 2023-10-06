@@ -230,15 +230,8 @@ def _insert_disciplinas(conn: Neo4jConnection, preprocessed_dir: Path):
             (create_query, disciplina_to_curso_relationship_query, curso_to_disciplina_relationship_query)
         )
 
-    batch_size = 1000
-
-    transactions_batches = [transactions_queries[start_batch_index:start_batch_index + batch_size]
-                            for start_batch_index in range(0, len(transactions_queries), batch_size)]
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [executor.submit(run_transactions_batch, conn, batch) for batch in transactions_batches]
-
-        concurrent.futures.wait(futures)
+    transactions_batches = _partition_transactions_into_batches(transactions_queries, 1000)
+    _submit_transactions_batches_and_wait(transactions_batches, conn, 30)
 
     end = time.perf_counter()
     print(f"Disciplinas ({disciplinas_df.shape[0]} linhas): {end - start}s")
@@ -288,15 +281,8 @@ def _insert_disciplinas_ministradas(conn: Neo4jConnection, preprocessed_dir: Pat
             (create_query, disciplina_ministrada_to_disciplina_relationship_query)
         )
 
-    batch_size = 2000
-
-    transactions_batches = [transactions_queries[start_batch_index: start_batch_index + batch_size]
-                            for start_batch_index in range(0, len(transactions_queries), batch_size)]
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = [executor.submit(run_transactions_batch, conn, batch) for batch in transactions_batches]
-
-        concurrent.futures.wait(futures)
+    transactions_batches = _partition_transactions_into_batches(transactions_queries, 2000)
+    _submit_transactions_batches_and_wait(transactions_batches, conn)
 
     end = time.perf_counter()
     print(f"Disciplinas Ministradas ({disciplinas_ministradas_df.shape[0]} linhas): {end - start}s")
@@ -378,27 +364,86 @@ def _insert_disciplinas_ministradas_docentes(conn: Neo4jConnection, preprocessed
 
         transactions_queries += transactions
 
-    batch_size = 1100
-
-    transactions_batches = [transactions_queries[start_batch_index: start_batch_index + batch_size]
-                            for start_batch_index in range(0, len(transactions_queries), batch_size)]
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = [executor.submit(run_transactions_batch, conn, batch) for batch in transactions_batches]
-
-        concurrent.futures.wait(futures)
+    transactions_batches = _partition_transactions_into_batches(transactions_queries, 1100)
+    _submit_transactions_batches_and_wait(transactions_batches, conn)
 
     end = time.perf_counter()
-
     print(f"Disciplinas Ministradas Docentes ({disciplinas_ministradas_docentes_df.shape[0]} linhas): {end - start}s")
+
+
+def _insert_discentes(conn: Neo4jConnection, preprocessed_dir: Path):
+    start = time.perf_counter()
+
+    discentes_csv = preprocessed_dir / "discentes.csv"
+    discentes_df = pd.read_csv(discentes_csv, delimiter=";")
+
+    create_query_builder = CypherCreateQueryBuilder("Discente")
+
+    attribute_keys = list(discentes_df.columns)
+    attribute_keys.remove("sigla_campus")
+
+    transactions_queries: list[tuple] = []
+
+    for _, row in discentes_df.iterrows():
+        for key in attribute_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key in ["ano_ingresso", "periodo_letivo_ingresso", "ano_nascimento"]:
+                value_type = Neo4jDataType.INTEGER
+
+            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
+
+        create_query = create_query_builder.build()
+
+        transactions = (create_query)
+
+        if not pd.isna(row["sigla_campus"]):
+            discente_codigo_query_filter = CypherQueryFilter(
+                "codigo", CypherQueryFilterType.EQUAL, row["codigo"])
+
+            unidade_sigla_query_filter = CypherQueryFilter(
+                "sigla", CypherQueryFilterType.EQUAL, row['sigla_campus'])
+
+            discente_to_unidade_relationship_query = make_relationship_query(
+                "Discente",
+                discente_codigo_query_filter,
+                "Unidade",
+                unidade_sigla_query_filter,
+                "STUDY_AT"
+            )
+
+            transactions = (create_query, discente_to_unidade_relationship_query)
+
+        transactions_queries.append(transactions)
+
+    transactions_batches = _partition_transactions_into_batches(transactions_queries, 600)
+    _submit_transactions_batches_and_wait(transactions_batches, conn)
+
+    end = time.perf_counter()
+    print(f"Discentes ({discentes_df.shape[0]} linhas): {end - start}s")
 
 
 def _cqb_add_property_when_value_not_absent(query_builder: CypherCreateQueryBuilder, key, value,
                                             value_type: Neo4jDataType):
+    if isinstance(value, str) and value.strip() == '':
+        return query_builder
+
     if not pd.isna(value):
         query_builder.add_property(key, value, value_type)
 
     return query_builder
+
+
+def _partition_transactions_into_batches(transactions: list[tuple], batch_size: int):
+    return [transactions[start_batch_index:start_batch_index + batch_size]
+            for start_batch_index in range(0, len(transactions), batch_size)]
+
+
+def _submit_transactions_batches_and_wait(transactions_batches: list[list], conn: Neo4jConnection, max_workers=100):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(run_transactions_batch, conn, batch) for batch in transactions_batches]
+
+        concurrent.futures.wait(futures)
 
 
 def execute():
@@ -415,6 +460,7 @@ def execute():
         _insert_disciplinas(neo4j_conn, preprocessed_dir)
         _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
         _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
+        _insert_discentes(neo4j_conn, preprocessed_dir)
     finally:
         neo4j_conn.close()
 
