@@ -378,7 +378,7 @@ def _insert_disciplinas_ministradas_docentes(conn: Neo4jConnection, preprocessed
 
         transactions_queries += transactions
 
-    batch_size = 2000
+    batch_size = 1100
 
     transactions_batches = [transactions_queries[start_batch_index: start_batch_index + batch_size]
                             for start_batch_index in range(0, len(transactions_queries), batch_size)]
