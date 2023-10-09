@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import papermill as pm
@@ -22,22 +23,25 @@ def preprocess():
 
 
 def _get_notebooks_to_run(notebooks_dir: Path) -> list[Path]:
-    notebooks_to_run = []
+    found_notebooks: list[Path] = []
 
     for path in notebooks_dir.iterdir():
         if path.is_file() and path.name.endswith(".ipynb"):
-            notebooks_to_run.append(path)
+            found_notebooks.append(path)
 
-    # Resolvendo dependências de maneira manual, pois são poucas.
-    notebook_disciplinas_ministradas_index = notebooks_to_run.index(
-        notebooks_dir / "Preprocessing Disciplinas Ministradas.ipynb"
-    )
+    notebooks_to_run = []
 
-    notebook_cursos_index = notebooks_to_run.index(
-        notebooks_dir / "Preprocessing Cursos.ipynb"
-    )
+    with open(Storage.get_file("dados_abertos/notebooks_execution_order.json")) as correct_execution_order_file:
+        correct_execution_order = json.load(correct_execution_order_file)
 
-    if notebook_cursos_index > notebook_disciplinas_ministradas_index:
-        notebooks_to_run.insert(notebook_cursos_index + 1, notebooks_to_run.pop(notebook_disciplinas_ministradas_index))
+        for notebook_title in correct_execution_order:
+            notebook_path = notebooks_dir / (notebook_title + ".ipynb")
+
+            if notebook_path in found_notebooks:
+                notebooks_to_run.append(notebook_path)
 
     return notebooks_to_run
+
+
+if __name__ == '__main__':
+    preprocess()
