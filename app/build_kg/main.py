@@ -381,6 +381,7 @@ def _insert_discentes(conn: Neo4jConnection, preprocessed_dir: Path):
 
     attribute_keys = list(discentes_df.columns)
     attribute_keys.remove("sigla_campus")
+    attribute_keys.remove("codigo_curso")
 
     transactions_queries: list[tuple] = []
 
@@ -391,15 +392,16 @@ def _insert_discentes(conn: Neo4jConnection, preprocessed_dir: Path):
             if key in ["ano_ingresso", "periodo_letivo_ingresso", "ano_nascimento"]:
                 value_type = Neo4jDataType.INTEGER
 
-            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
+            create_query_builder = _cqb_add_property_when_value_not_absent(create_query_builder, key,
+                                                                           row[key], value_type)
 
-        create_query = create_query_builder.build()
+        transactions = []
 
-        transactions = (create_query)
+        discente_codigo_query_filter = CypherQueryFilter(
+            "codigo", CypherQueryFilterType.EQUAL, row["codigo"])
 
-        if not pd.isna(row["sigla_campus"]):
-            discente_codigo_query_filter = CypherQueryFilter(
-                "codigo", CypherQueryFilterType.EQUAL, row["codigo"])
+        if pd.notna(row["sigla_campus"]):
+            create_query_builder.remove_property("campus")
 
             unidade_sigla_query_filter = CypherQueryFilter(
                 "sigla", CypherQueryFilterType.EQUAL, row['sigla_campus'])
@@ -412,9 +414,27 @@ def _insert_discentes(conn: Neo4jConnection, preprocessed_dir: Path):
                 "STUDY_AT"
             )
 
-            transactions = (create_query, discente_to_unidade_relationship_query)
+            transactions.append(discente_to_unidade_relationship_query)
 
-        transactions_queries.append(transactions)
+        if pd.notna(row["codigo_curso"]):
+            create_query_builder.remove_property("nome_curso")
+
+            curso_codigo_query_filter = CypherQueryFilter(
+                "codigo", CypherQueryFilterType.EQUAL, row["codigo_curso"], Neo4jDataType.INTEGER)
+
+            discente_to_curso_relationship_query = make_relationship_query(
+                "Discente",
+                discente_codigo_query_filter,
+                "Curso",
+                curso_codigo_query_filter,
+                "STUDY"
+            )
+
+            transactions.append(discente_to_curso_relationship_query)
+
+        transactions.insert(0, create_query_builder.build())
+
+        transactions_queries.append(tuple(transactions))
 
     transactions_batches = _partition_transactions_into_batches(transactions_queries, 600)
     _submit_transactions_batches_and_wait(transactions_batches, conn)
@@ -428,7 +448,7 @@ def _cqb_add_property_when_value_not_absent(query_builder: CypherCreateQueryBuil
     if isinstance(value, str) and value.strip() == '':
         return query_builder
 
-    if not pd.isna(value):
+    if pd.notna(value):
         query_builder.add_property(key, value, value_type)
 
     return query_builder

@@ -188,36 +188,41 @@ def _cast_property_value(value, value_type: Neo4jDataType) -> str:
 
 
 class CypherCreateQueryBuilder:
+    PROPERTIES_INITIAL_STATE = {}
+
     def __init__(self, label: str | list[str]):
         if isinstance(label, list):
             self._label = ":".join(label)
         else:
             self._label = label
 
-        self._properties = []
-        self._BASE_STMT = f"CREATE (n:{self._label}) SET "
+        self._properties = self.PROPERTIES_INITIAL_STATE
+        self._alias = "n"
+        self._BASE_STMT = f"CREATE ({self._alias}:{self._label}) SET "
 
-    def add_property(self, key, value, value_type=Neo4jDataType.STRING):
+    def add_property(self, key: str, value, value_type=Neo4jDataType.STRING):
         value = _cast_property_value(value, value_type)
 
-        self._properties.append(f"n.{key} = {value}")
+        self._properties[key] = value
+
+        return self
+
+    def remove_property(self, key: str):
+        self._properties.pop(key)
 
         return self
 
     def build(self) -> str:
-        statement = ""
+        properties_setting = ", ".join([f"{self._alias}.{key} = {value}" for key, value in self._properties.items()])
 
-        if len(self._properties) == 1:
-            statement = self._BASE_STMT + self._properties[0]
-        elif len(self._properties) > 1:
-            statement = self._BASE_STMT + ", ".join(self._properties)
+        statement = self._BASE_STMT + properties_setting
 
         self.reset()
 
         return statement
 
     def reset(self):
-        self._properties = []
+        self._properties = self.PROPERTIES_INITIAL_STATE
 
 
 def make_relationship_query(a_label, a_filters: list[CypherQueryFilter] | CypherQueryFilter, b_label,
