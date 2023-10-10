@@ -19,7 +19,6 @@ requests = "*"
 colorama = "*"
 alive-progress = "*"
 papermill = "*"
-black = "*"
 numpy = "*"
 python-dotenv = "*"
 
