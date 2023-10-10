@@ -24,7 +24,7 @@ def _get_files_to_collect() -> list[FileToDownload]:
 
 
 def collect():
-    destination_path = Storage.get_dir("dados_abertos/raw", need_create=True)
+    destination_path = Storage.get_dir("dados_abertos/raw", create_if_not_exists=True)
     files_to_collect: list[FileToDownload] = _get_files_to_collect()
 
     with alive_bar(len(files_to_collect), title="Collecting files") as bar:

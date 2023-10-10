@@ -3,28 +3,9 @@ from pathlib import Path
 
 from alive_progress import alive_bar
 
-from app.dados_abertos.converters import ConversionError, CsvHeaderMetadata
+from app.dados_abertos.converters import (ConversionError, get_csv_headers_metadata)
 from app.utils.storage import FileExtension, Storage
 from app.utils.validators import validate_json_file
-
-
-def _get_csv_headers_metadata(raw_file_extension: FileExtension) -> list[CsvHeaderMetadata]:
-    headers_metadata_file = Storage.get_file("dados_abertos/csv_headers_metadata.json")
-
-    with open(headers_metadata_file, "r") as f:
-        headers_metadata_json = json.load(f)
-
-    headers_metadata = []
-
-    for raw_metadata in headers_metadata_json["metadata"]:
-        if raw_metadata["raw_file_extension"] == raw_file_extension.value:
-            subject_path = Storage.get_file(f'dados_abertos/raw/{raw_metadata["subject"]}.{raw_file_extension.value}')
-
-            header_metadata = CsvHeaderMetadata(subject_path, raw_metadata["header"])
-
-            headers_metadata.append(header_metadata)
-
-    return headers_metadata
 
 
 def _json_to_csv(header: str, subject: Path, transformed_path: Path) -> None:
@@ -89,9 +70,9 @@ def convert() -> None:
     """
     Converte os arquivos coletados do Barramento IFG para o formato esperado pelo processo de pré-processamento dos dados.
     """
-    transformed_path = Storage.get_dir("dados_abertos/transformed", need_create=True)
+    transformed_path = Storage.get_dir("dados_abertos/transformed", create_if_not_exists=True)
 
-    json_to_csv_headers_metadata: list[CsvHeaderMetadata] = _get_csv_headers_metadata(FileExtension.JSON)
+    json_to_csv_headers_metadata = get_csv_headers_metadata(FileExtension.JSON)
 
     with alive_bar(len(json_to_csv_headers_metadata), title="Converting 'Barramento IFG' JSON files to CSV") as bar:
         for metadata in json_to_csv_headers_metadata:

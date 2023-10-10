@@ -28,12 +28,17 @@
     {
       "raw_file_extension": "json",
       "subject": "estagios_curriculares",
-      "header": "campus;curso;modalidade;nivel;data1;data2;data3;ofertante;status;tipo;remunerado;valor_remuneracao"
+      "header": "campus;curso;modalidade;nivel;data_inicio;data_fim;data_relatorio;ofertante;status;tipo;remunerado;valor_remuneracao"
     },
     {
       "raw_file_extension": "json",
       "subject": "servidores",
       "header": "nome;matricula;cargo;data_ingresso;atribuicao;carga_horaria"
+    },
+    {
+      "raw_file_extension": "json",
+      "subject": "editais_iniciacao_cientifica",
+      "header": "ano;programas;instituicao;unidade;descricao"
     }
   ]
 }

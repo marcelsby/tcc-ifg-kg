@@ -443,6 +443,61 @@ def _insert_discentes(conn: Neo4jConnection, preprocessed_dir: Path):
     print(f"Discentes ({discentes_df.shape[0]} linhas): {end - start}s")
 
 
+def _insert_editais_iniciacao_cientifica(conn: Neo4jConnection, preprocessed_dir: Path):
+    start = time.perf_counter()
+
+    editais_iniciacao_cientifica_csv = preprocessed_dir / "editais_iniciacao_cientifica.csv"
+    editais_iniciacao_cientifica_df = pd.read_csv(editais_iniciacao_cientifica_csv, delimiter=";")
+
+    create_query_builder = CypherCreateQueryBuilder("EditalIniciacaoCientifica")
+
+    attribute_keys = list(editais_iniciacao_cientifica_df.columns)
+    attribute_keys.remove("sigla_unidade")
+
+    transactions_queries: list[tuple] = []
+
+    for _, row in editais_iniciacao_cientifica_df.iterrows():
+        for key in attribute_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key == "ano":
+                value_type = Neo4jDataType.INTEGER
+
+            create_query_builder = _cqb_add_property_when_value_not_absent(create_query_builder, key,
+                                                                           row[key], value_type)
+
+        transactions = []
+
+        if pd.notna(row["sigla_unidade"]):
+            create_query_builder.remove_property("unidade")
+
+            unidade_sigla_query_filter = CypherQueryFilter(
+                "sigla", CypherQueryFilterType.EQUAL, row["sigla_unidade"])
+
+            edital_iniciacao_cientifica_codigo_query_filter = CypherQueryFilter(
+                "codigo", CypherQueryFilterType.EQUAL, row["codigo"])
+
+            edital_iniciacao_cientifica_to_unidade_relationship_query = make_relationship_query(
+                "EditalIniciacaoCientifica",
+                edital_iniciacao_cientifica_codigo_query_filter,
+                "Unidade",
+                unidade_sigla_query_filter,
+                "BASED_AT"
+            )
+
+            transactions.append(edital_iniciacao_cientifica_to_unidade_relationship_query)
+
+        transactions.insert(0, create_query_builder.build())
+
+        transactions_queries.append(tuple(transactions))
+
+    transactions_batches = _partition_transactions_into_batches(transactions_queries, 10)
+    _submit_transactions_batches_and_wait(transactions_batches, conn, 20)
+
+    end = time.perf_counter()
+    print(f"Editais de Iniciação Científica ({editais_iniciacao_cientifica_df.shape[0]} linhas): {end - start}")
+
+
 def _cqb_add_property_when_value_not_absent(query_builder: CypherCreateQueryBuilder, key, value,
                                             value_type: Neo4jDataType):
     if isinstance(value, str) and value.strip() == '':
@@ -473,14 +528,15 @@ def execute():
     try:
         preprocessed_dir = Storage.get_dir("dados_abertos/preprocessed")
 
-        _insert_unidades(neo4j_conn, preprocessed_dir)
-        _insert_docentes(neo4j_conn, preprocessed_dir)
-        _insert_taes(neo4j_conn, preprocessed_dir)
-        _insert_cursos(neo4j_conn, preprocessed_dir)
-        _insert_disciplinas(neo4j_conn, preprocessed_dir)
-        _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
-        _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
-        _insert_discentes(neo4j_conn, preprocessed_dir)
+        # _insert_unidades(neo4j_conn, preprocessed_dir)
+        # _insert_docentes(neo4j_conn, preprocessed_dir)
+        # _insert_taes(neo4j_conn, preprocessed_dir)
+        # _insert_cursos(neo4j_conn, preprocessed_dir)
+        # _insert_disciplinas(neo4j_conn, preprocessed_dir)
+        # _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
+        # _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
+        # _insert_discentes(neo4j_conn, preprocessed_dir)
+        _insert_editais_iniciacao_cientifica(neo4j_conn, preprocessed_dir)
     finally:
         neo4j_conn.close()
 

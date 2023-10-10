@@ -24,13 +24,13 @@ class Storage:
         return requested_file
 
     @classmethod
-    def get_dir(cls, directory_path: str, need_create: bool = False) -> Path | NotADirectoryError:
+    def get_dir(cls, directory_path: str, create_if_not_exists: bool = False) -> Path | NotADirectoryError:
         requested_directory = cls._get_path_from_storage(directory_path)
 
-        if need_create and not requested_directory.exists():
+        if create_if_not_exists and not requested_directory.exists():
             cls.mkdir(requested_directory)
 
-        if not need_create and not requested_directory.is_dir():
+        if not create_if_not_exists and not requested_directory.is_dir():
             raise NotADirectoryError("The specified directory is not a directory or does not exist.")
 
         return requested_directory
