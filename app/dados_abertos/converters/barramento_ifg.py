@@ -74,6 +74,10 @@ def convert() -> None:
 
     json_to_csv_headers_metadata = get_csv_headers_metadata(FileExtension.JSON)
 
+    for index, metadata in enumerate(json_to_csv_headers_metadata):
+        if metadata.subject.name in ["editais_iniciacao_cientifica.json"]:
+            json_to_csv_headers_metadata.pop(index)
+
     with alive_bar(len(json_to_csv_headers_metadata), title="Converting 'Barramento IFG' JSON files to CSV") as bar:
         for metadata in json_to_csv_headers_metadata:
             _json_to_csv(metadata.header, metadata.subject, transformed_path)
