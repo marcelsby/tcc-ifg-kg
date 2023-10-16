@@ -528,14 +528,14 @@ def execute():
     try:
         preprocessed_dir = Storage.get_dir("dados_abertos/preprocessed")
 
-        # _insert_unidades(neo4j_conn, preprocessed_dir)
-        # _insert_docentes(neo4j_conn, preprocessed_dir)
-        # _insert_taes(neo4j_conn, preprocessed_dir)
-        # _insert_cursos(neo4j_conn, preprocessed_dir)
-        # _insert_disciplinas(neo4j_conn, preprocessed_dir)
-        # _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
-        # _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
-        # _insert_discentes(neo4j_conn, preprocessed_dir)
+        _insert_unidades(neo4j_conn, preprocessed_dir)
+        _insert_docentes(neo4j_conn, preprocessed_dir)
+        _insert_taes(neo4j_conn, preprocessed_dir)
+        _insert_cursos(neo4j_conn, preprocessed_dir)
+        _insert_disciplinas(neo4j_conn, preprocessed_dir)
+        _insert_disciplinas_ministradas(neo4j_conn, preprocessed_dir)
+        _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
+        _insert_discentes(neo4j_conn, preprocessed_dir)
         _insert_editais_iniciacao_cientifica(neo4j_conn, preprocessed_dir)
     finally:
         neo4j_conn.close()
