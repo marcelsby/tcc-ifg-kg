@@ -498,6 +498,65 @@ def _insert_editais_iniciacao_cientifica(conn: Neo4jConnection, preprocessed_dir
     print(f"Editais de Iniciação Científica ({editais_iniciacao_cientifica_df.shape[0]} linhas): {end - start}")
 
 
+def _insert_estagios_curriculares(conn: Neo4jConnection, preprocessed_dir: Path):
+    start = time.perf_counter()
+
+    estagios_curriculares_csv = preprocessed_dir / "estagios_curriculares.csv"
+    estagios_curriculares_df = pd.read_csv(estagios_curriculares_csv, delimiter=";")
+
+    create_query_builder = CypherCreateQueryBuilder("EstagioCurricular")
+
+    attribute_keys = list(estagios_curriculares_df.columns)
+    attribute_keys.remove("codigo_curso")
+
+    transactions_queries: list[tuple] = []
+
+    for _, row in estagios_curriculares_df.iterrows():
+        for key in attribute_keys:
+            value_type = Neo4jDataType.STRING
+
+            if key in ["data_inicio", "data_fim", "data_relatorio"]:
+                value_type = Neo4jDataType.DATE
+
+            if key == "valor_remuneracao":
+                value_type = Neo4jDataType.FLOAT
+
+            create_query_builder = _cqb_add_property_when_value_not_absent(create_query_builder, key,
+                                                                           row[key], value_type)
+
+        transactions = []
+
+        if pd.notna(row["codigo_curso"]):
+            create_query_builder.remove_property("sigla_campus")
+            create_query_builder.remove_property("curso")
+
+            curso_codigo_query_filter = CypherQueryFilter(
+                "codigo", CypherQueryFilterType.EQUAL, row["codigo_curso"], Neo4jDataType.INTEGER)
+
+            estagio_curricular_codigo_query_filter = CypherQueryFilter(
+                "codigo", CypherQueryFilterType.EQUAL, row["codigo"])
+
+            estagio_curricular_to_curso_relationship_query = make_relationship_query(
+                "EstagioCurricular",
+                estagio_curricular_codigo_query_filter,
+                "Curso",
+                curso_codigo_query_filter,
+                "UNDERTOOK_IN_COURSE"
+            )
+
+            transactions.append(estagio_curricular_to_curso_relationship_query)
+
+        transactions.insert(0, create_query_builder.build())
+
+        transactions_queries.append(tuple(transactions))
+
+    transactions_batches = _partition_transactions_into_batches(transactions_queries, 300)
+    _submit_transactions_batches_and_wait(transactions_batches, conn)
+
+    end = time.perf_counter()
+    print(f"Estágios Curriculares ({estagios_curriculares_df.shape[0]} linhas): {end - start}s")
+
+
 def _cqb_add_property_when_value_not_absent(query_builder: CypherCreateQueryBuilder, key, value,
                                             value_type: Neo4jDataType):
     if isinstance(value, str) and value.strip() == '':
@@ -537,6 +596,7 @@ def execute():
         _insert_disciplinas_ministradas_docentes(neo4j_conn, preprocessed_dir)
         _insert_discentes(neo4j_conn, preprocessed_dir)
         _insert_editais_iniciacao_cientifica(neo4j_conn, preprocessed_dir)
+        _insert_estagios_curriculares(neo4j_conn, preprocessed_dir)
     finally:
         neo4j_conn.close()
 

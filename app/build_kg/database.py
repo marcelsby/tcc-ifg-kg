@@ -82,6 +82,7 @@ class Neo4jDataType(Enum):
     BOOL = auto()
     DATE = auto()
     INTEGER = auto()
+    FLOAT = auto()
 
 
 class CypherJsonLikeProperty:
@@ -178,6 +179,9 @@ def _cast_property_value(value, value_type: Neo4jDataType) -> str:
 
     if value_type is Neo4jDataType.INTEGER:
         return f'{int(value)}'
+
+    if value_type is Neo4jDataType.FLOAT:
+        return f'{float(value)}'
 
     if value_type is Neo4jDataType.BOOL:
         if not isinstance(value, bool):
