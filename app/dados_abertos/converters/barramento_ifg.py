@@ -3,7 +3,8 @@ from pathlib import Path
 
 from alive_progress import alive_bar
 
-from app.dados_abertos.converters import (ConversionError, get_csv_headers_metadata)
+from app.dados_abertos.converters import (ConversionError,
+                                          get_csv_headers_metadata)
 from app.utils.storage import FileExtension, Storage
 from app.utils.validators import validate_json_file
 
