@@ -5,3 +5,6 @@ transformed/
 
 # Não ignorar o .csv de servidores baixados do Portal da Transparência
 !dados_abertos/extra/
+
+# Ignorar os dumps do banco de dados do IFG Produz
+/ifg_produz/*.backup

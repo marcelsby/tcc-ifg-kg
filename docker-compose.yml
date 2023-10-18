@@ -10,6 +10,19 @@ services:
       NEO4J_AUTH: neo4j/test
     volumes:
       - neo4j_data:/data
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: ifgproduz743
+      POSTGRES_DB: ifg_produz
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - .docker/postgres/scripts/:/docker-entrypoint-initdb.d/
+      - ./storage/ifg_produz/ifg_produz010721.backup:/dumps/ifg_produz010721.backup
+
 
 volumes:
+  postgres_data:
   neo4j_data:
