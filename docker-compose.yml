@@ -13,10 +13,11 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_PASSWORD: ifgproduz743
-      POSTGRES_DB: ifg_produz
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${IFG_PRODUZ_DB_PASSWORD}
+      POSTGRES_DB: ${IFG_PRODUZ_DB_DATABASE}
     ports:
-      - "5432:5432"
+      - "${IFG_PRODUZ_DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - .docker/postgres/scripts/:/docker-entrypoint-initdb.d/

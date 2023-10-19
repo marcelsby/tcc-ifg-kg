@@ -1,7 +1,7 @@
 # Grafo de Conhecimento do IFG
 
-Repositório referente ao código-fonte da solução tecnológica proposta pelo meu TCC, intitulado "Construção de um Grafo do Conhecimento Acadêmico a partir da
-estrutura semântica dos dados do IFG".
+Repositório referente ao código-fonte da solução tecnológica proposta pelo meu TCC, intitulado "Construção de um Grafo
+do Conhecimento Acadêmico a partir da estrutura semântica dos dados do IFG".
 
 ## Requisitos
 
@@ -30,7 +30,8 @@ estrutura semântica dos dados do IFG".
   cp .env.example .env
 ```
 
-O arquivo `.env.example` já vem com valores padrão, caso só deseje executar o projeto sem customizações não é necessário alterar o arquivo `.env` apenas usá-lo
+O arquivo `.env.example` já vem com valores padrão, caso só deseje executar o projeto sem customizações não é necessário
+alterar o arquivo `.env` apenas usá-lo
 da maneira que ele ficará após a execução do comando acima.
 
 ⚠️ **Para informações sobre a customização da execução leia a seção "Variáveis de Ambiente".**
@@ -59,8 +60,10 @@ pipenv shell
   pipenv run pipeline
 ```
 
-8. Abra o browser do Neo4j no navegador e realize as consultas no Grafo, caso necessite das credenciais, são as mesmas encontradas no arquivo .env, configurado
-   anteriormente, na configuração padrão a URL para acessar o browser do Neo4j é a seguinte: [http://localhost:7474](http://localhost:7474)
+8. Abra o browser do Neo4j no navegador e realize as consultas no Grafo, caso necessite das credenciais, são as mesmas
+   encontradas no arquivo .env, configurado
+   anteriormente, na configuração padrão a URL para acessar o browser do Neo4j é a
+   seguinte: [http://localhost:7474](http://localhost:7474)
 
 9. Execute a consulta de teste, que exibe todos os servidores ligados ao IFG Jataí:
 
@@ -74,11 +77,16 @@ MATCH (s:Servidor)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN s, u
 
 ## Variáveis de Ambiente
 
-Caso deseje customizar a execução do projeto abra o arquivo `.env` com o seu editor preferido e preencha as variáveis conforme a tabela abaixo:
+Caso deseje customizar a execução do projeto abra o arquivo `.env` com o seu editor preferido e preencha as variáveis
+conforme a tabela abaixo:
 
-|    Variável    | Descrição                                                        | Valor de exemplo |
-|:--------------:|------------------------------------------------------------------|------------------|
-|   NEO4J_HOST   | IP do banco usado pela aplicação para inserir os dados do grafo. | `localhost`      |
-|   NEO4J_PORT   | Porta da porta Bolt do banco.                                    | `7687`           |
-|   NEO4J_USER   | Usuário usado pela aplicação para se conectar ao banco.          | `neo4j`          |
-| NEO4J_PASSWORD | Senha do usuário do banco.                                       | `ABhkQt`         |
+|        Variável        | Descrição                                                                                                               | Valor de exemplo |
+|:----------------------:|-------------------------------------------------------------------------------------------------------------------------|------------------|
+|       NEO4J_HOST       | IP do banco usado pela aplicação para inserir os dados do grafo.                                                        | `localhost`      |
+|       NEO4J_PORT       | Porta da porta Bolt do banco.                                                                                           | `7687`           |
+|       NEO4J_USER       | Usuário usado pela aplicação para se conectar ao banco.                                                                 | `neo4j`          |
+|     NEO4J_PASSWORD     | Senha do usuário do banco.                                                                                              | `ABhkQt`         |
+|   IFG_PRODUZ_DB_HOST   | IP do banco de dados.                                                                                                   | `localhost`      |
+|   IFG_PRODUZ_DB_PORT   | Porta que será exposta pelo contêiner Docker para o Postgres.                                                           | `5432`           |
+| IFG_PRODUZ_DB_PASSWORD | Senha usada para se autenticar no banco com o usuário definido acima.                                                   | `U#H7Tu-R`       |
+| IFG_PRODUZ_DB_DATABASE | Nome do banco de dados que será criado quando o banco iniciar. Nesse banco que os dados do IFG Produz serão importados. | `ifg_produz`     |
