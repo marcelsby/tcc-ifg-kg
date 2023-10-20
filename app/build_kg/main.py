@@ -1,4 +1,5 @@
 import concurrent.futures
+import datetime
 import time
 from pathlib import Path
 
@@ -8,18 +9,22 @@ from app.build_kg.database import (CypherCreateQueryBuilder,
                                    CypherJsonLikeProperty, CypherQueryFilter,
                                    CypherQueryFilterType, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
-                                   make_relationship_query,
-                                   run_transactions_batch)
+                                   make_relationship_query, run_queries,
+                                   run_transactions)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
 
 def _insert_unidades(conn: Neo4jConnection, preprocessed_dir: Path):
+    start = time.perf_counter()
+
     unidades_csv = preprocessed_dir / "unidades.csv"
     unidades_df = pd.read_csv(unidades_csv, delimiter=";")
 
     create_query_builder = CypherCreateQueryBuilder("Unidade")
     attributes_keys = list(unidades_df.columns)
+
+    queries = []
 
     for _, row in unidades_df.iterrows():
         for key in attributes_keys:
@@ -30,9 +35,12 @@ def _insert_unidades(conn: Neo4jConnection, preprocessed_dir: Path):
 
             _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
-        create_query = create_query_builder.build()
+        queries.append(create_query_builder.build())
 
-        conn.query(create_query)
+    run_queries(conn, tuple(queries))
+
+    end = time.perf_counter()
+    print(f"Unidades ({unidades_df.shape[0]} linhas): {end - start}s")
 
 
 def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
@@ -46,36 +54,37 @@ def _insert_docentes(conn: Neo4jConnection, preprocessed_dir: Path):
     attributes_keys = list(docentes_df.columns)
     attributes_keys.remove("campus")
 
-    with conn.driver.session() as session:
-        for _, row in docentes_df.iterrows():
-            for key in attributes_keys:
-                value_type = Neo4jDataType.STRING
+    transactions = []
 
-                if key == "matricula":
-                    value_type = Neo4jDataType.INTEGER
-                elif key == "data_ingresso":
-                    value_type = Neo4jDataType.DATE
+    for _, row in docentes_df.iterrows():
+        for key in attributes_keys:
+            value_type = Neo4jDataType.STRING
 
-                _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
+            if key == "matricula":
+                value_type = Neo4jDataType.INTEGER
+            elif key == "data_ingresso":
+                value_type = Neo4jDataType.DATE
 
-            create_query = create_query_builder.build()
+            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
-            docente_matricula_filter = CypherQueryFilter(
-                "matricula", CypherQueryFilterType.EQUAL, row["matricula"], Neo4jDataType.INTEGER)
+        create_query = create_query_builder.build()
 
-            unidade_campus_filter = CypherQueryFilter("nome", CypherQueryFilterType.EQUAL, row["campus"])
+        docente_matricula_filter = CypherQueryFilter(
+            "matricula", CypherQueryFilterType.EQUAL, row["matricula"], Neo4jDataType.INTEGER)
 
-            relationship_query = make_relationship_query(
-                "Docente",
-                docente_matricula_filter,
-                "Unidade",
-                unidade_campus_filter,
-                "PART_OF",
-            )
+        unidade_nome_filter = CypherQueryFilter("nome", CypherQueryFilterType.EQUAL, row["campus"])
 
-            with session.begin_transaction() as tx:
-                tx.run(create_query)
-                tx.run(relationship_query)
+        relationship_query = make_relationship_query(
+            "Docente",
+            docente_matricula_filter,
+            "Unidade",
+            unidade_nome_filter,
+            "PART_OF",
+        )
+
+        transactions.append((create_query, relationship_query))
+
+    run_transactions(conn, transactions)
 
     end = time.perf_counter()
     print(f"Docentes ({docentes_df.shape[0]} linhas): {end - start}s")
@@ -92,34 +101,35 @@ def _insert_taes(conn: Neo4jConnection, preprocessed_dir: Path):
     attributes_keys = list(taes_df.columns)
     attributes_keys.remove("uorg_exercicio")
 
-    with conn.driver.session() as session:
-        for _, row in taes_df.iterrows():
-            for key in attributes_keys:
-                value_type = Neo4jDataType.STRING
+    transactions = []
 
-                if key == "matricula":
-                    value_type = Neo4jDataType.INTEGER
-                elif key == "data_ingresso":
-                    value_type = Neo4jDataType.DATE
+    for _, row in taes_df.iterrows():
+        for key in attributes_keys:
+            value_type = Neo4jDataType.STRING
 
-                _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
+            if key == "matricula":
+                value_type = Neo4jDataType.INTEGER
+            elif key == "data_ingresso":
+                value_type = Neo4jDataType.DATE
 
-            create_query = create_query_builder.build()
+            _cqb_add_property_when_value_not_absent(create_query_builder, key, row[key], value_type)
 
-            tae_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL, row["matricula"])
-            unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["uorg_exercicio"])
+        create_query = create_query_builder.build()
 
-            relationship_query = make_relationship_query(
-                "TAE",
-                tae_matricula_filter,
-                "Unidade",
-                unidade_sigla_filter,
-                "PART_OF"
-            )
+        tae_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL, row["matricula"])
+        unidade_sigla_filter = CypherQueryFilter("sigla", CypherQueryFilterType.EQUAL, row["uorg_exercicio"])
 
-            with session.begin_transaction() as tx:
-                tx.run(create_query)
-                tx.run(relationship_query)
+        relationship_query = make_relationship_query(
+            "TAE",
+            tae_matricula_filter,
+            "Unidade",
+            unidade_sigla_filter,
+            "PART_OF"
+        )
+
+        transactions.append((create_query, relationship_query))
+
+    run_transactions(conn, transactions)
 
     end = time.perf_counter()
     print(f"TAEs ({taes_df.shape[0]} linhas): {end - start}s")
@@ -541,7 +551,7 @@ def _insert_estagios_curriculares(conn: Neo4jConnection, preprocessed_dir: Path)
                 estagio_curricular_codigo_query_filter,
                 "Curso",
                 curso_codigo_query_filter,
-                "UNDERTOOK_IN_COURSE"
+                "UNDERTOOK_IN"
             )
 
             transactions.append(estagio_curricular_to_curso_relationship_query)
@@ -575,12 +585,14 @@ def _partition_transactions_into_batches(transactions: list[tuple], batch_size: 
 
 def _submit_transactions_batches_and_wait(transactions_batches: list[list], conn: Neo4jConnection, max_workers=100):
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(run_transactions_batch, conn, batch) for batch in transactions_batches]
+        futures = [executor.submit(run_transactions, conn, batch) for batch in transactions_batches]
 
         concurrent.futures.wait(futures)
 
 
 def execute():
+    start = time.perf_counter()
+
     neo4j_conn = make_neo4j_bolt_connection(Environment.neo4j_user, Environment.neo4j_password,
                                             Environment.neo4j_host, Environment.neo4j_port)
 
@@ -599,6 +611,9 @@ def execute():
         _insert_estagios_curriculares(neo4j_conn, preprocessed_dir)
     finally:
         neo4j_conn.close()
+
+    end = time.perf_counter()
+    print(f"Tempo para realizar todas as inserções: {datetime.timedelta(seconds=end - start)}")
 
 
 if __name__ == '__main__':

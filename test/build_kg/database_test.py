@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 
 import pytest
@@ -27,17 +28,33 @@ class TestDatabase:
         return CypherCreateQueryBuilder("Test")
 
     def test_single_attribute_cyhper_create_query(self, builder):
-        query = builder.add_property("atributo", "valor").build()
-        assert query == 'CREATE (n:Test) SET n.atributo = "valor"'
+        property_key = str(uuid.uuid4())
+
+        query = builder.add_property(property_key, "valor").build()
+        assert query == f'CREATE (n:Test) SET n.{property_key} = "valor"'
 
     def test_multiple_attributes_cypher_create_query(self, builder):
+        property_key = str(uuid.uuid4())
+
         query = (
-            builder.add_property("atributo", "valor")
+            builder.add_property(property_key, "valor")
             .add_property("testando", "123")
             .build()
         )
 
-        assert query == 'CREATE (n:Test) SET n.atributo = "valor", n.testando = "123"'
+        assert query == f'CREATE (n:Test) SET n.{property_key} = "valor", n.testando = "123"'
+
+    def test_reset_cypher_create_query_builder(self, builder):
+        old_property_key = str(uuid.uuid4())
+        new_property_key = str(uuid.uuid4())
+
+        builder.add_property(old_property_key, "valor")
+
+        builder.reset()
+        builder.add_property(new_property_key, "valor2")
+        query = builder.build()
+
+        assert query == f'CREATE (n:Test) SET n.{new_property_key} = "valor2"'
 
     def test_create_relationship_query(self):
         docente_matricula_filter = CypherQueryFilter("matricula", CypherQueryFilterType.EQUAL,

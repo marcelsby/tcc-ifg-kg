@@ -41,12 +41,8 @@ class Neo4jConnection:
         response = None
 
         try:
-            session = (
-                self._driver.session(database=db)
-                if db is not None
-                else self._driver.session()
-            )
-            response = list(session.run(query))
+            session = self._driver.session(database=db)
+            response = session.run(query)
         except Exception as e:
             log.error(f"Erro ao executar a consulta: {str(e)}")
         finally:
@@ -192,15 +188,13 @@ def _cast_property_value(value, value_type: Neo4jDataType) -> str:
 
 
 class CypherCreateQueryBuilder:
-    PROPERTIES_INITIAL_STATE = {}
-
     def __init__(self, label: str | list[str]):
         if isinstance(label, list):
             self._label = ":".join(label)
         else:
             self._label = label
 
-        self._properties = self.PROPERTIES_INITIAL_STATE
+        self._properties = self._get_properties_initial_state()
         self._alias = "n"
         self._BASE_STMT = f"CREATE ({self._alias}:{self._label}) SET "
 
@@ -226,7 +220,10 @@ class CypherCreateQueryBuilder:
         return statement
 
     def reset(self):
-        self._properties = self.PROPERTIES_INITIAL_STATE
+        self._properties = self._get_properties_initial_state()
+
+    def _get_properties_initial_state(self):
+        return {}
 
 
 def make_relationship_query(a_label, a_filters: list[CypherQueryFilter] | CypherQueryFilter, b_label,
@@ -256,14 +253,22 @@ def make_relationship_query(a_label, a_filters: list[CypherQueryFilter] | Cypher
     return f'MATCH (a:{a_label}), (b:{b_label}) WHERE {filters_builder.build()} CREATE (a)-[r:{rel_label}{rel_props_str}]->(b)'
 
 
-def run_transactions_batch(conn: Neo4jConnection, transactions_batch: list[tuple]):
+def run_transactions(conn: Neo4jConnection, transactions: list[tuple]):
     conn.check_driver_initialized()
 
     with conn.driver.session() as session:
         with session.begin_transaction() as tx:
-            for transaction in transactions_batch:
+            for transaction in transactions:
                 for query in transaction:
                     tx.run(query)
+
+
+def run_queries(conn: Neo4jConnection, queries: tuple):
+    conn.check_driver_initialized()
+
+    with conn.driver.session() as session:
+        for query in queries:
+            session.run(query)
 
 
 def _replace_filters_alias(query_filters: list[CypherQueryFilter], alias: str) -> list[CypherQueryFilter]:
