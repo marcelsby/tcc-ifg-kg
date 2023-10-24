@@ -11,6 +11,7 @@ services:
     volumes:
       - neo4j_data:/data
   postgres:
+    container_name: "ifg_produz_db"
     image: postgres:16
     environment:
       POSTGRES_USER: postgres

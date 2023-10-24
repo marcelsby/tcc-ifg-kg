@@ -12,7 +12,6 @@ jupyter = "jupyter notebook --no-browser"
 fmt = "./scripts/pipenv-format-code.sh"
 
 [packages]
-pandas = "*"
 neo4j = "*"
 notebook = "*"
 requests = "*"
@@ -21,6 +20,8 @@ alive-progress = "*"
 papermill = "*"
 numpy = "*"
 python-dotenv = "*"
+pandas = {extras = ["postgresql"], version = "*"}
+thefuzz = "*"
 
 [dev-packages]
 isort = "*"
