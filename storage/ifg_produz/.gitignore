@@ -1,6 +1,7 @@
 # Ignorar pastas de arquivos intermediários
 extracted/
 intermediate/
+preprocessed/
 
 # Ignorar os dumps do banco de dados do IFG Produz
 *.backup
