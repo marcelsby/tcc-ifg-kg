@@ -50,6 +50,8 @@ pipenv shell
 
 6. Instale as dependências da aplicação:
 
+⚠️ **Instale os [pré-requisitos da biblioteca psycopg2](https://www.psycopg.org/docs/install.html#build-prerequisites) antes de executar o comando.**
+
 ```bash
   pipenv install
 ```
