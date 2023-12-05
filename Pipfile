@@ -6,6 +6,7 @@ name = "pypi"
 [scripts]
 pipeline = "python -m app.pipeline"
 dados_abertos = "python -m app.dados_abertos.main"
+ifg_produz = "python -m app.ifg_produz.main"
 build_kg = "python -m app.build_kg.main"
 test = "pytest test/"
 jupyter = "jupyter notebook --no-browser"
