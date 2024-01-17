@@ -24,6 +24,7 @@ python-dotenv = "*"
 pandas = {extras = ["postgresql"], version = "*"}
 thefuzz = "*"
 nltk = "*"
+autoflake = "*"
 
 [dev-packages]
 isort = "*"
