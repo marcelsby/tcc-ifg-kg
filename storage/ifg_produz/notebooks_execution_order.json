@@ -1,0 +1,20 @@
+[
+  "nltk_bootstrap",
+  "Preprocessing Banca",
+  "Preprocessing Registro",
+  "Preprocessing Participação Evento",
+  "Preprocessing Projetos de Pesquisa",
+  "Preprocessing Orientação",
+  "Preprocessing Áreas de Atuação",
+  "Preprocessing Outras Produções",
+  "Preprocessing Formação Acadêmica",
+  "Preprocessing Produção Técnica",
+  "Preprocessing Atuação Profissional",
+  "Preprocessing Atividades Atuação Profissional",
+  "Preprocessing Produção Bibliográfica",
+  "Preprocessing Grupos de Pesquisa",
+  "Preprocessing Currículos",
+  "Preprocessing Palavras Chaves",
+  "Preprocessing UFs e Cidades",
+  "Preprocessing Cidades->Currículos"
+]
