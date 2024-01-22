@@ -1,6 +1,7 @@
+import concurrent
 import logging as log
 from enum import Enum, auto
-from typing import Any
+from typing import Any, Callable, Iterable, Sized
 
 from neo4j import Driver, GraphDatabase
 
@@ -51,6 +52,13 @@ class Neo4jConnection:
 
         return response
 
+    def run_queries(self, queries: tuple):
+        self.check_driver_initialized()
+
+        with self.driver.session() as session:
+            for query in queries:
+                session.run(query)
+
     @property
     def is_driver_initialized(self) -> bool:
         return self.driver is not None
@@ -64,6 +72,37 @@ class Neo4jConnection:
     @property
     def driver(self) -> Driver:
         return self._driver
+
+    def run_transactions(self, transactions: list[tuple]):
+        self.check_driver_initialized()
+
+        with self.driver.session() as session:
+            with session.begin_transaction() as tx:
+                for transaction in transactions:
+                    for query in transaction:
+                        tx.run(query)
+
+    def run_queries_batched(self, queries: tuple, batch_size: int, max_workers=100):
+        batches = self.make_batches(queries, batch_size)
+
+        self._run_batches_parallelized(self.run_queries, batches, max_workers)
+
+    def run_transactions_batched(self, transactions: list[tuple], batch_size: int, max_workers=100):
+        batches = self.make_batches(transactions, batch_size)
+
+        self._run_batches_parallelized(self.run_transactions, batches, max_workers)
+
+    @staticmethod
+    def make_batches(to_be_partitioned: Iterable | Sized, batch_size: int):
+        return [to_be_partitioned[start_batch_index:start_batch_index + batch_size]
+                for start_batch_index in range(0, len(to_be_partitioned), batch_size)]
+
+    @staticmethod
+    def _run_batches_parallelized(func: Callable, batches: Iterable, max_workers: int = 100):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(func, batch) for batch in batches]
+
+            concurrent.futures.wait(futures)
 
 
 def make_neo4j_bolt_connection(user: str, password: str, host: str = "localhost", port: int = 7687):
@@ -168,6 +207,9 @@ class CypherPropertiesBuilder:
 
 def _cast_property_value(value, value_type: Neo4jDataType) -> str:
     if value_type is Neo4jDataType.STRING:
+        if '"' in value:
+            value = value.replace('"', '\\"')
+
         return f'"{value}"'
 
     if value_type is Neo4jDataType.DATE:
