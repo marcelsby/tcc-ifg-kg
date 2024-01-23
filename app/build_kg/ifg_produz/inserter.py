@@ -1,10 +1,16 @@
 from app.build_kg.database import make_neo4j_bolt_connection
-from app.build_kg.ifg_produz import (insert_banca, insert_cidades,
-                                     insert_curriculos, insert_palavras_chaves,
+from app.build_kg.ifg_produz import (insert_areas_de_atuacao,
+                                     insert_atuacao_profissional, insert_banca,
+                                     insert_cidades, insert_curriculos,
+                                     insert_formacao_academica,
+                                     insert_orientacao,
+                                     insert_outras_producoes,
+                                     insert_palavras_chaves,
                                      insert_participacao_evento,
+                                     insert_producao_tecnica,
                                      insert_projeto_pesquisa, insert_registro,
                                      insert_textos_jornais,
-                                     insert_unidades_federativas, insert_orientacao)
+                                     insert_unidades_federativas)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
@@ -61,6 +67,32 @@ def insert():
     insert_orientacao.execute(
         conn,
         Storage.get_file("ifg_produz/preprocessed/orientacao.csv")
+    )
+
+    insert_atuacao_profissional.execute(
+        conn,
+        Storage.get_file("ifg_produz/preprocessed/atuacao_profissional.csv"),
+        Storage.get_file("ifg_produz/preprocessed/atividades_atuacao_profissional.csv")
+    )
+
+    insert_producao_tecnica.execute(
+        conn,
+        Storage.get_file("ifg_produz/preprocessed/producao_tecnica.csv")
+    )
+
+    insert_outras_producoes.execute(
+        conn,
+        Storage.get_file("ifg_produz/preprocessed/outras_producoes.csv")
+    )
+
+    insert_areas_de_atuacao.execute(
+        conn,
+        Storage.get_file("ifg_produz/preprocessed/areas_de_atuacao.csv")
+    )
+
+    insert_formacao_academica.execute(
+        conn,
+        Storage.get_file("ifg_produz/preprocessed/formacao_academica.csv")
     )
 
 
