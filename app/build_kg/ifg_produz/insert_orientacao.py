@@ -45,7 +45,7 @@ def _create_orientacao_query(row):
             value_type = Neo4jDataType.INTEGER
 
         if property_key == "concluida":
-            value_type = Neo4jDataType.INTEGER
+            value_type = Neo4jDataType.BOOL
 
         cqb_add_property_when_value_not_absent(
             create_query_builder,
