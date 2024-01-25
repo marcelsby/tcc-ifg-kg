@@ -7,6 +7,7 @@ from app.build_kg.ifg_produz import (insert_areas_de_atuacao,
                                      insert_outras_producoes,
                                      insert_palavras_chaves,
                                      insert_participacao_evento,
+                                     insert_producao_bibliografica,
                                      insert_producao_tecnica,
                                      insert_projeto_pesquisa, insert_registro,
                                      insert_textos_jornais,
@@ -93,6 +94,13 @@ def insert():
     insert_formacao_academica.execute(
         conn,
         Storage.get_file("ifg_produz/preprocessed/formacao_academica.csv")
+    )
+
+    insert_producao_bibliografica.execute(
+        conn,
+        Storage.get_file("ifg_produz/preprocessed/producao_bibliografica.csv"),
+        Storage.get_file("ifg_produz/preprocessed/revista.csv"),
+        Storage.get_file("ifg_produz/preprocessed/conferencia.csv")
     )
 
 
