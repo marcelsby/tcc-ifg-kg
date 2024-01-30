@@ -31,6 +31,9 @@ class Neo4jConnection:
         except Exception as e:
             log.critical(str(e))
 
+    def __del__(self):
+        self.close()
+
     def close(self):
         if self.is_driver_initialized:
             self.driver.close()
