@@ -23,3 +23,13 @@ class GeneralFilters:
     def integer_codigo_filter(codigo: int):
         return CypherQueryFilter("codigo", CypherQueryFilterType.EQUAL, codigo,
                                  Neo4jDataType.INTEGER)
+
+    @staticmethod
+    def integer_filter(key: str, value: int):
+        return CypherQueryFilter(key, CypherQueryFilterType.EQUAL, value,
+                                 Neo4jDataType.INTEGER)
+
+    @staticmethod
+    def string_filter(key: str, value: str):
+        return CypherQueryFilter(key, CypherQueryFilterType.EQUAL, value,
+                                 Neo4jDataType.STRING)
