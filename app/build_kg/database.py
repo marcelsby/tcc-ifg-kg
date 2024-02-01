@@ -255,6 +255,12 @@ class CypherCreateQueryBuilder:
 
         return self
 
+    def remove_properties(self, keys: list[str]):
+        for key in keys:
+            self.remove_property(key)
+
+        return self
+
     def build(self) -> str:
         properties_setting = ", ".join([f"{self._alias}.{key} = {value}" for key, value in self._properties.items()])
 
