@@ -1,7 +1,8 @@
 from app.build_kg.dados_abertos import (
     insert_cursos, insert_disciplinas, insert_disciplinas_ministradas,
     insert_disciplinas_ministradas_docentes, insert_docentes,
-    insert_editais_iniciacao_cientifica, insert_taes, insert_unidades)
+    insert_editais_iniciacao_cientifica, insert_estagios_curriculares,
+    insert_taes, insert_unidades)
 from app.build_kg.database import make_neo4j_bolt_connection
 from app.utils.environment import Environment
 from app.utils.storage import Storage
@@ -49,6 +50,11 @@ def insert():
     insert_editais_iniciacao_cientifica.execute(
         conn,
         Storage.get_file("dados_abertos/preprocessed/editais_iniciacao_cientifica.csv")
+    )
+
+    insert_estagios_curriculares.execute(
+        conn,
+        Storage.get_file("dados_abertos/preprocessed/estagios_curriculares.csv")
     )
 
 

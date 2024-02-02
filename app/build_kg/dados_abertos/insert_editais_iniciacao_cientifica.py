@@ -7,7 +7,8 @@ from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
                                    make_relationship_query)
 from app.build_kg.utils import (GeneralFilters,
-                                cqb_add_property_when_value_not_absent)
+                                cqb_add_property_when_value_not_absent,
+                                remove_properties)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
@@ -42,9 +43,9 @@ def _create_edital_iniciacao_cientifica_transaction(row):
 def _create_edital_iniciacao_cientifica_query(row, properties_to_remove: list[str]):
     properties_keys = list(row.index)
 
-    create_query_builder = CypherCreateQueryBuilder("EdtialIniciacaoCientifica")
+    properties_keys = remove_properties(["sigla_unidade", *properties_to_remove], properties_keys)
 
-    create_query_builder.remove_properties(["sigla_unidade", *properties_to_remove])
+    create_query_builder = CypherCreateQueryBuilder("EdtialIniciacaoCientifica")
 
     for property_key in properties_keys:
         value_type = Neo4jDataType.STRING

@@ -13,8 +13,8 @@ def cqb_add_property_when_value_not_absent(query_builder: CypherCreateQueryBuild
         query_builder.add_property(key, value, value_type)
 
 
-def remove_properties(properties_keys_to_be_removed: list[str], properties_keys: list[str]):
-    return [prop for prop in properties_keys if prop not in properties_keys_to_be_removed]
+def remove_properties(keys_to_be_removed: list[str], properties_keys: list[str]):
+    return [prop for prop in properties_keys if prop not in keys_to_be_removed]
 
 
 class GeneralFilters:
