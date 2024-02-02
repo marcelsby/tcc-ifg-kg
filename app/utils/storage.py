@@ -47,3 +47,12 @@ class Storage:
     @classmethod
     def _get_path_from_storage(cls, file_or_dir) -> Path:
         return cls._STORAGE_DIR / file_or_dir
+
+
+class StorageWithBasePath:
+
+    def __init__(self, base_path: str):
+        self._base_path = base_path
+
+    def get_file(self, file_path: str):
+        Storage.get_file(self._base_path + file_path)
