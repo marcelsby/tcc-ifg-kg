@@ -80,20 +80,23 @@ class TestDatabase:
 
     def test_make_neo4j_bolt_connection_with_default_parameters(self, mocker, db_credentials):
         # Given
-        neo4j_connection_mock = mocker.MagicMock(return_value=None)
-        mocker.patch.object(Neo4jConnection, "__init__", new=neo4j_connection_mock)
+        neo4j_connection_constructor_mock = mocker.MagicMock(return_value=None)
+        mocker.patch.object(Neo4jConnection, "__init__", new=neo4j_connection_constructor_mock)
+        mocker.patch.object(Neo4jConnection, "__del__", new=mocker.MagicMock(return_value=None))
 
         # When
         make_neo4j_bolt_connection(db_credentials.user, db_credentials.password)
 
         # Then
         expected_uri = "bolt://localhost:7687"
-        neo4j_connection_mock.assert_called_once_with(expected_uri, db_credentials.user, db_credentials.password)
+        neo4j_connection_constructor_mock.assert_called_once_with(
+            expected_uri, db_credentials.user, db_credentials.password)
 
     def test_make_neo4j_bolt_connection_providing_all_parameters(self, mocker, db_credentials):
         # Given
-        neo4j_connection_mock = mocker.MagicMock(return_value=None)
-        mocker.patch.object(Neo4jConnection, "__init__", new=neo4j_connection_mock)
+        neo4j_connection_constructor_mock = mocker.MagicMock(return_value=None)
+        mocker.patch.object(Neo4jConnection, "__init__", new=neo4j_connection_constructor_mock)
+        mocker.patch.object(Neo4jConnection, "__del__", new=mocker.MagicMock(return_value=None))
 
         # When
         make_neo4j_bolt_connection(db_credentials.user, db_credentials.password,
@@ -101,5 +104,5 @@ class TestDatabase:
 
         # Then
         expected_uri = "bolt://0.0.0.0:1234"
-        neo4j_connection_mock.assert_called_once_with(
+        neo4j_connection_constructor_mock.assert_called_once_with(
             expected_uri, db_credentials.user, db_credentials.password)

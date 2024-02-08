@@ -55,4 +55,4 @@ class StorageWithBasePath:
         self._base_path = base_path
 
     def get_file(self, file_path: str):
-        Storage.get_file(self._base_path + file_path)
+        return Storage.get_file(self._base_path + file_path)

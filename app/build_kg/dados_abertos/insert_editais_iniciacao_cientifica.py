@@ -45,7 +45,7 @@ def _create_edital_iniciacao_cientifica_query(row, properties_to_remove: list[st
 
     properties_keys = remove_properties(["sigla_unidade", *properties_to_remove], properties_keys)
 
-    create_query_builder = CypherCreateQueryBuilder("EdtialIniciacaoCientifica")
+    create_query_builder = CypherCreateQueryBuilder("EditalIniciacaoCientifica")
 
     for property_key in properties_keys:
         value_type = Neo4jDataType.STRING
@@ -68,7 +68,7 @@ def _create_edital_to_unidade_relationship_query(row):
         "EditalIniciacaoCientifica",
         GeneralFilters.string_filter("codigo", row["codigo"]),
         "Unidade",
-        GeneralFilters.string_filter("sigla", row["sigla_campus"]),
+        GeneralFilters.string_filter("sigla", row["sigla_unidade"]),
         "BASED_AT"
     )
 

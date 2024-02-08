@@ -32,7 +32,7 @@ def execute(conn: Neo4jConnection, producao_bibliografica_csv: Path, revista_csv
     conn.run_queries_batched(queries, 500, 200)
     end = time.perf_counter()
 
-    print(f"[ifg_produz] Conferência ({revista_df.shape[0]} linhas): {end - start}s")
+    print(f"[ifg_produz] Conferência ({conferencia_df.shape[0]} linhas): {end - start}s")
 
     producao_bibliografica_df = pd.read_csv(producao_bibliografica_csv, delimiter=";")
 

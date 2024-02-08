@@ -28,11 +28,16 @@ def _create_unidades_queries(row):
     create_query_builder = CypherCreateQueryBuilder("Unidade")
 
     for property_key in properties_keys:
+        value_type = Neo4jDataType.STRING
+
+        if property_key == "uasg":
+            value_type = Neo4jDataType.INTEGER
+
         cqb_add_property_when_value_not_absent(
             create_query_builder,
             property_key,
             row[property_key],
-            Neo4jDataType.STRING
+            value_type
         )
 
     return create_query_builder.build()

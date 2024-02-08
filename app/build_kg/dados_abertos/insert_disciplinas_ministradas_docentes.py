@@ -17,7 +17,7 @@ def execute(conn: Neo4jConnection, disciplinas_ministradas_docentes_csv: Path):
     transactions = disciplinas_ministradas_docentes_df.apply(_create_disciplina_ministrada_docente_transaction, axis=1)
 
     start = time.perf_counter()
-    conn.run_transactions_batched(transactions, 500, 350)
+    conn.run_transactions_batched(transactions, 2700, 300)
     end = time.perf_counter()
 
     print(

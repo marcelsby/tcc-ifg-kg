@@ -1,9 +1,10 @@
-import concurrent
 import logging as log
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import Enum, auto
 from typing import Any, Callable, Iterable, Sized
 
 from neo4j import Driver, GraphDatabase
+from neo4j.exceptions import Neo4jError
 
 log.basicConfig(
     level=log.INFO,
@@ -60,7 +61,12 @@ class Neo4jConnection:
 
         with self.driver.session() as session:
             for query in queries:
-                session.run(query)
+                try:
+                    session.run(query)
+                except Neo4jError as e:
+                    new_message = f"{e}. Query: {query}"
+
+                    raise Exception(new_message) from e
 
     @property
     def is_driver_initialized(self) -> bool:
@@ -83,7 +89,12 @@ class Neo4jConnection:
             with session.begin_transaction() as tx:
                 for transaction in transactions:
                     for query in transaction:
-                        tx.run(query)
+                        try:
+                            tx.run(query)
+                        except Neo4jError as e:
+                            new_message = f"{e}. Query: {query}"
+
+                            raise Exception(new_message) from e
 
     def run_queries_batched(self, queries: tuple, batch_size: int, max_workers=100):
         batches = self.make_batches(queries, batch_size)
@@ -102,10 +113,11 @@ class Neo4jConnection:
 
     @staticmethod
     def _run_batches_parallelized(func: Callable, batches: Iterable, max_workers: int = 100):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(func, batch) for batch in batches]
 
-            concurrent.futures.wait(futures)
+            for future in as_completed(futures):
+                future.result()
 
 
 def make_neo4j_bolt_connection(user: str, password: str, host: str = "localhost", port: int = 7687):
@@ -210,7 +222,7 @@ class CypherPropertiesBuilder:
 
 def _cast_property_value(value, value_type: Neo4jDataType) -> str:
     if value_type is Neo4jDataType.STRING:
-        if '"' in value:
+        if isinstance(value, str) and '"' in value:
             value = value.replace('"', '\\"')
 
         return f'"{value}"'

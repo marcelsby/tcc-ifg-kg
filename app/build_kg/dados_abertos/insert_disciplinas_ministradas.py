@@ -18,20 +18,20 @@ def execute(conn: Neo4jConnection, disciplinas_ministradas_csv: Path):
     transactions = disciplinas_ministradas_df.apply(_create_disciplina_ministrada_transaction, axis=1)
 
     start = time.perf_counter()
-    conn.run_transactions_batched(transactions, 100, 500)
+    conn.run_transactions_batched(transactions, 3000, 300)
     end = time.perf_counter()
 
     print(f"[dados_abertos] Disciplinas Ministradas ({disciplinas_ministradas_df.shape[0]} linhas): {end - start}s")
 
 
 def _create_disciplina_ministrada_transaction(row):
-    create_query = _create_curso_query(row)
+    create_query = _create_disciplina_ministrada_query(row)
     to_disciplina_rel_query = _create_disciplina_ministrada_to_disciplina_relationship_query(row)
 
     return create_query, to_disciplina_rel_query
 
 
-def _create_curso_query(row):
+def _create_disciplina_ministrada_query(row):
     properties_keys = list(row.index)
 
     properties_keys.remove("codigo_disciplina")

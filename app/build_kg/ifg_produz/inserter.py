@@ -1,4 +1,4 @@
-from app.build_kg.database import make_neo4j_bolt_connection
+from app.build_kg.database import Neo4jConnection, make_neo4j_bolt_connection
 from app.build_kg.ifg_produz import (insert_areas_de_atuacao,
                                      insert_atuacao_profissional, insert_banca,
                                      insert_cidades, insert_curriculos,
@@ -16,90 +16,87 @@ from app.utils.environment import Environment
 from app.utils.storage import StorageWithBasePath
 
 
-def insert():
-    conn = make_neo4j_bolt_connection(Environment.neo4j_user, Environment.neo4j_password,
-                                      Environment.neo4j_host, Environment.neo4j_port)
-
+def insert(connection: Neo4jConnection):
     storage = StorageWithBasePath("ifg_produz/preprocessed/")
 
     insert_unidades_federativas.execute(
-        conn,
+        connection,
         storage.get_file("unidades_federativas.csv")
     )
 
     insert_cidades.execute(
-        conn,
+        connection,
         storage.get_file("cidades.csv")
     )
 
     insert_palavras_chaves.execute(
-        conn,
+        connection,
         storage.get_file("palavras_chaves.csv")
     )
 
     insert_curriculos.execute(
-        conn,
+        connection,
         storage.get_file("curriculos.csv")
     )
 
     insert_textos_jornais.execute(
-        conn,
+        connection,
         storage.get_file("textos_jornais.csv")
     )
 
     insert_banca.execute(
-        conn,
+        connection,
         storage.get_file("banca.csv")
     )
 
     insert_registro.execute(
-        conn,
+        connection,
         storage.get_file("registro.csv")
     )
 
     insert_participacao_evento.execute(
-        conn,
+        connection,
         storage.get_file("participacao_evento.csv")
     )
 
     insert_projeto_pesquisa.execute(
-        conn,
+        connection,
         storage.get_file("projetos_pesquisa.csv")
     )
 
     insert_orientacao.execute(
-        conn,
+        connection,
         storage.get_file("orientacao.csv")
     )
 
     insert_atuacao_profissional.execute(
-        conn,
+        connection,
         storage.get_file("atuacao_profissional.csv"),
         storage.get_file("atividades_atuacao_profissional.csv")
     )
 
     insert_producao_tecnica.execute(
-        conn,
+        connection,
         storage.get_file("producao_tecnica.csv")
     )
 
     insert_outras_producoes.execute(
-        conn,
+        connection,
         storage.get_file("outras_producoes.csv")
     )
 
     insert_areas_de_atuacao.execute(
-        conn,
+        connection,
         storage.get_file("areas_de_atuacao.csv")
     )
 
     insert_formacao_academica.execute(
-        conn,
+        connection,
         storage.get_file("formacao_academica.csv")
     )
 
     insert_producao_bibliografica.execute(
-        conn,
+        connection,
         storage.get_file("producao_bibliografica.csv"),
         storage.get_file("revista.csv"),
         storage.get_file("conferencia.csv")
@@ -107,4 +104,11 @@ def insert():
 
 
 if __name__ == '__main__':
-    insert()
+    conn = make_neo4j_bolt_connection(
+        Environment.neo4j_user,
+        Environment.neo4j_password,
+        Environment.neo4j_host,
+        Environment.neo4j_port
+    )
+
+    insert(conn)

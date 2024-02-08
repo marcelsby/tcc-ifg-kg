@@ -29,14 +29,14 @@ def execute(conn: Neo4jConnection, curriculos_csv: Path):
 def _create_curriculo_transaction(row):
     transaction = []
 
-    if pd.notna(row["palavra_chave"]):
-        transaction = [*_create_curriculo_to_palavra_chave_relationship_queries(row)]
-
-    if pd.notna(row["codigo_cidade_nascimento"]):
-        transaction.append(_create_curriculo_to_cidade_relationship_query(row))
+    # if pd.notna(row["palavra_chave"]):
+    #     transaction = [*_create_curriculo_to_palavra_chave_relationship_queries(row)]
+    #
+    # if pd.notna(row["codigo_cidade_nascimento"]):
+    #     transaction.append(_create_curriculo_to_cidade_relationship_query(row))
 
     transaction.insert(0, _create_curriculo_query(row))
-    transaction.insert(2, _create_servidor_to_curriculo_relationship_query(row))
+    # transaction.insert(2, _create_servidor_to_curriculo_relationship_query(row))
 
     return transaction
 
