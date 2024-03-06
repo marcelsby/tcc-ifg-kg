@@ -209,3 +209,56 @@ Representa um curso que é ofertado em uma Unidade.
     ```cypher
     MATCH (c:Curso) WHERE c.nivel = 'Ensino Médio' RETURN count(c)
     ```
+
+### Disciplina
+
+Representa uma Disciplina que é ministrada em um Curso.
+
+![diagrama disciplina](.github/resources/graph-docs/disciplina.svg)
+
+#### Rótulos
+
+1. Disciplina
+
+#### Propriedades
+
+| Nome              | Obrigatória | Tipo de Dado |
+| ----------------- | ----------- | ------------ |
+| codigo            | Sim         | Integer      |
+| periodo           | Sim         | Integer      |
+| departamento      | Sim         | String       |
+| nome              | Sim         | String       |
+| carga_horaria     | Sim         | Integer      |
+| sigla             | Sim         | String       |
+| frequencia_oferta | Sim         | String       |
+
+
+#### Relacionamentos
+
+- **Disciplina -[:TAUGHT_AT]➔ Curso**
+
+    Disciplina que é lecionada em um Curso.
+
+- **Unidade -[:OFFERS]➔ Curso**
+
+    Curso que oferta uma Disciplina.
+
+#### Consultas de exemplo
+
+1. O nome das Disciplinas lecionadas no curso de TADS da Unidade Jataí, ordenadas de maneira ascendente pelo período que são ofertadas:
+
+    ```cypher
+    MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 471 RETURN d.nome ORDER BY d.periodo
+    ```
+
+2. Quantas Disciplinas foram ofertadas nos Cursos da Unidade de Jataí:
+
+    ```cypher
+    MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso)-[:OFFERED_AT]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN count(d)
+    ```
+
+3. Quantidades de Disciplinas de todas Unidades agrupadas por frequência de oferta:
+
+    ```cypher
+    MATCH (d:Disciplina) RETURN d.frequencia_oferta, COUNT(d)
+    ```
