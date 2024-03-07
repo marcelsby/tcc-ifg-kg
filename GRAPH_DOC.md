@@ -337,13 +337,13 @@ Representa um Edital de Iniciação Científica que foi sediado em alguma Unidad
 
 #### Propriedades
 
-| Nome      | Obrigatória | Tipo de Dado |
-| --------- | ----------- | ------------ |
-| codigo    | Sim         | String       |
-| ano       | Sim         | Integer      |
-| programas | Sim         | String       |
-| unidade   | Não         | String       |
-| descricao | Sim         | String       |
+| Nome      | Obrigatória | Tipo de Dado | Formato Adicional |
+| --------- | ----------- | ------------ | ----------------- |
+| codigo    | Sim         | String       | UUIDv4            |
+| ano       | Sim         | Integer      |                   |
+| programas | Sim         | String       |                   |
+| unidade   | Não         | String       |                   |
+| descricao | Sim         | String       |                   |
 
 #### Relacionamentos
 
@@ -358,12 +358,69 @@ Representa um Edital de Iniciação Científica que foi sediado em alguma Unidad
 
 1. Quantidade de Editais de Iniciação Científica agrupados por Unidades:
 
-    ```cypher
-    MATCH (eic:EditalIniciacaoCientifica)-[:BASED_AT]->(u:Unidade) RETURN u.sigla, count(eic)
-    ```
+   ```cypher
+   MATCH (eic:EditalIniciacaoCientifica)-[:BASED_AT]->(u:Unidade) RETURN u.sigla, count(eic)
+   ```
 
 2. Os Editais de Iniciação Científica que possuem a propriedade "unidade":
 
-    ```cypher
-    MATCH (eic:EditalIniciacaoCientifica) WHERE eic.unidade IS NOT NULL RETURN eic
+   ```cypher
+   MATCH (eic:EditalIniciacaoCientifica) WHERE eic.unidade IS NOT NULL RETURN eic
+   ```
+
+### Estágio Curricular
+
+Representa um Estágio Curricular que foi realizado por algum discente durante a realização de algum Curso.
+
+![diagrama estágio curricular](.github/resources/graph-docs/estagio-curricular.svg)
+
+#### Rótulos
+
+1. `EstagioCurricular`
+
+#### Propriedades
+
+| Nome              | Obrigatória | Tipo de Dado | Formato Adicional |
+| ----------------- | ----------- | ------------ | ----------------- |
+| codigo            | Sim         | String       | UUIDv4            |
+| sigla_campus      | Não         | String       |                   |
+| curso             | Não         | String       |                   |
+| modalidade        | Sim         | String       |                   |
+| nivel             | Sim         | String       |                   |
+| data_inicio       | Sim         | Date         |                   |
+| data_fim          | Não         | Date         |                   |
+| data_relatorio    | Não         | Date         |                   |
+| ofertante         | Sim         | String       |                   |
+| status            | Sim         | String       |                   |
+| tipo              | Sim         | String       |                   |
+| remunerado        | Sim         | String       |                   |
+| valor_remuneracao | Não         | Float        |                   |
+
+#### Relacionamentos
+
+- **EstagioCurricular -[:UNDERTOOK_AT]➔ Curso**
+
+  Qual Curso o discente que realizou o estágio estava cursando.
+
+  - **Observações:**
+    - Caso as propriedades "sigla_campus" e "curso" do Estágio Curricular estejam presentes, este relacionamento não existirá.
+
+#### Consultas de exemplo
+
+1. O valor médio de remuneração dos estágios, agrupados por Unidade, de nível "Ensino Médio", de todos os tempos:
+
+   ```cypher
+   MATCH (ec:EstagioCurricular)-[:UNDERTOOK_AT]->(c:Curso)-[:OFFERED_AT]->(u:Unidade) WHERE ec.nivel = 'Ensino Médio' RETURN u.sigla, avg(ec.valor_remuneracao)
+   ```
+
+2. Quantidade de Estágios Curriculares que possuem a propriedade "curso":
+
+   ```cypher
+   MATCH (ec:EstagioCurricular) WHERE ec.curso IS NOT NULL RETURN count(ec)
+   ```
+
+3. Estágios Curriculares realizados por discentes que cursaram o Curso de Manutenção e Suporte em Informática na Unidade Jataí:
+
+    ```
+    MATCH (ec:EstagioCurricular)-[:UNDERTOOK_AT]->(c:Curso) WHERE c.codigo = 1028 RETURN ec, c
     ```
