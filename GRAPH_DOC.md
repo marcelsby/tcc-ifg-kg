@@ -262,3 +262,69 @@ Representa uma Disciplina que é ministrada em um Curso.
     ```cypher
     MATCH (d:Disciplina) RETURN d.frequencia_oferta, COUNT(d)
     ```
+
+### Disciplina Ministrada
+
+Enquanto a Disciplina representa uma definição, a Disciplina Ministrada representa uma
+instância de Disciplina, que foi ministrada em algum ano/período, em algum Curso e por algum Docente.
+
+![diagrama disciplina ministrada](.github/resources/graph-docs/disciplina-ministrada.svg)
+
+#### Rótulos
+
+1. DisciplinaMinistrada
+
+#### Propriedades
+
+| Nome           | Obrigatória | Tipo de Dado |
+| -------------- | ----------- | ------------ |
+| codigo         | Sim         | Integer      |
+| ano_letivo     | Sim         | Integer      |
+| periodo_letivo | Sim         | Integer      |
+| turma          | Não         | String       |
+
+#### Relacionamentos
+
+- **DisciplinaMinistrada -[:DEFINED_BY]➔ Disciplina**
+
+    Os dados da Disciplina que constituem a definição da Disciplina que foi Ministrada.
+
+- **DisciplinaMinistrada -[:TAUGHT_BY]➔ Docente**
+
+    Disciplina que foi ministrada por um Docente.
+
+    - Propriedades:
+
+        | Nome         | Obrigatória | Tipo de Dado | Descrição                                |
+        | ------------ | ----------- | ------------ | ---------------------------------------- |
+        | as_auxiliary | Sim         | Boolean      | Indica se o Docente atuou como auxiliar. |
+
+- **Docente -[:TAUGHT]➔ DisciplinaMinistrada**
+
+    Docente que ministrou a Disciplina.
+
+    - Propriedades:
+
+        | Nome         | Obrigatória | Tipo de Dado | Descrição                                |
+        | ------------ | ----------- | ------------ | ---------------------------------------- |
+        | as_auxiliary | Sim         | Boolean      | Indica se o Docente atuou como auxiliar. |
+
+#### Consultas de exemplo
+
+1. Disciplinas Ministradas por Docentes aleatórios, juntamente com o Docente e a definição de cada uma dessas Disciplinas Ministradas:
+
+    ```cypher
+    MATCH (a:Docente)-[:TAUGHT]->(b:DisciplinaMinistrada)-[:DEFINED_BY]->(c:Disciplina) RETURN a, b, c LIMIT 20
+    ```
+
+2. Disciplinas Ministradas por Docentes, como docentes auxiliares:
+
+    ```cypher
+    MATCH (c:Disciplina)<-[:DEFINED_BY]-(a:DisciplinaMinistrada)-[r:TAUGHT_BY]->(b:Docente) WHERE r.as_auxiliary = true RETURN a, b, c LIMIT 20
+    ```
+
+3. Quantas vezes a Disciplina de Banco de Dados I do curso de TADS da Unidade de Formosa foi ministrada:
+
+    ```cypher
+    MATCH (dm:DisciplinaMinistrada)-[:DEFINED_BY]->(d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 877 AND d.codigo = 21855 RETURN COUNT(dm)
+    ```
