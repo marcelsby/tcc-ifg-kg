@@ -29,7 +29,7 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
 
 #### Rótulos
 
-1. Unidade
+1. `Unidade`
 
 #### Propriedades
 
@@ -52,9 +52,9 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
 
 1. Buscando pela Unidade com a sigla "JAT":
 
-    ```cypher
-    MATCH (u:Unidade) WHERE u.sigla = 'JAT' RETURN u
-    ```
+   ```cypher
+   MATCH (u:Unidade) WHERE u.sigla = 'JAT' RETURN u
+   ```
 
 ### Docente
 
@@ -64,8 +64,8 @@ Representa um docente efetivo, que obrigatóriamente possui uma matrícula SIAPE
 
 #### Rótulos
 
-1. Docente
-2. Servidor
+1. `Docente`
+2. `Servidor`
 
 #### Propriedades
 
@@ -82,28 +82,27 @@ Representa um docente efetivo, que obrigatóriamente possui uma matrícula SIAPE
 
 - **Docente -[:PART_OF]➔ Unidade**
 
-    Docente que faz parte de uma Unidade.
-
+  Docente que faz parte de uma Unidade.
 
 #### Consultas de exemplo
 
 1. Docente com a matrícula "1526346":
 
-    ```cypher
-    MATCH (d:Docente) WHERE d.matricula = 1526346 RETURN d
-    ```
+   ```cypher
+   MATCH (d:Docente) WHERE d.matricula = 1526346 RETURN d
+   ```
 
 2. Docentes que possuem ligação com a Unidade de Jataí:
 
-    ```cypher
-    MATCH (d:Docente)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN d, u LIMIT 15
-    ```
+   ```cypher
+   MATCH (d:Docente)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN d, u LIMIT 15
+   ```
 
 3. Quantidade de Docentes que ingressaram depois de 01/01/2000:
 
-    ```cypher
-    MATCH (d:Docente) WHERE d.data_ingresso > date('2000-01-01') RETURN count(d)
-    ```
+   ```cypher
+   MATCH (d:Docente) WHERE d.data_ingresso > date('2000-01-01') RETURN count(d)
+   ```
 
 ### Técnico Administrativo Educacional (TAE)
 
@@ -113,8 +112,8 @@ Representa um TAE, que obrigatóriamente possui uma matrícula SIAPE e neste cas
 
 #### Rótulos
 
-1. TAE
-2. Servidor
+1. `TAE`
+2. `Servidor`
 
 #### Propriedades
 
@@ -130,28 +129,27 @@ Representa um TAE, que obrigatóriamente possui uma matrícula SIAPE e neste cas
 
 - **TAE -[:PART_OF]➔ Unidade**
 
-   TAE que faz parte de uma Unidade.
-
+  TAE que faz parte de uma Unidade.
 
 #### Consultas de exemplo
 
 1. TAE com a matrícula "2242502":
 
-    ```cypher
-    MATCH (t:TAE) WHERE t.matricula = 2242502 RETURN t
-    ```
+   ```cypher
+   MATCH (t:TAE) WHERE t.matricula = 2242502 RETURN t
+   ```
 
 2. TAEs que possuem ligação com a Unidade de Jataí:
 
-    ```cypher
-    MATCH (t:TAE)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN t, u LIMIT 15
-    ```
+   ```cypher
+   MATCH (t:TAE)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN t, u LIMIT 15
+   ```
 
 3. Quantidade de TAEs que ingressaram no ano de 2008:
 
-    ```cypher
-    MATCH (t:TAE) WHERE t.data_ingresso >= date('2008-01-01') AND t.data_ingresso <= date('2008-12-31') RETURN count(t)
-    ```
+   ```cypher
+   MATCH (t:TAE) WHERE t.data_ingresso >= date('2008-01-01') AND t.data_ingresso <= date('2008-12-31') RETURN count(t)
+   ```
 
 ### Curso
 
@@ -161,7 +159,7 @@ Representa um curso que é ofertado em uma Unidade.
 
 #### Rótulos
 
-1. Curso
+1. `Curso`
 
 #### Propriedades
 
@@ -183,32 +181,31 @@ Representa um curso que é ofertado em uma Unidade.
 | ch_total            | Não         | Integer      |
 | qtd_semestres       | Sim         | Integer      |
 
-
 #### Relacionamentos
 
 - **Curso -[:OFFERED_AT]➔ Unidade | Unidade -[:OFFERS]➔ Curso**
 
-    Curso que é oferecido em uma Unidade, e vice versa.
+  Curso que é oferecido em uma Unidade, e vice versa.
 
 #### Consultas de exemplo
 
 1. Curso com o código "471" e em qual Unidade que é ofertado:
 
-    ```cypher
-    MATCH (c:Curso)-[:OFFERED_AT]->(u:Unidade) WHERE c.codigo = 471 RETURN c, u
-    ```
+   ```cypher
+   MATCH (c:Curso)-[:OFFERED_AT]->(u:Unidade) WHERE c.codigo = 471 RETURN c, u
+   ```
 
 2. Cursos ofertados pela Unidade de Jataí:
 
-    ```cypher
-    MATCH (u:Unidade)-[:OFFERS]->(c:Curso) WHERE u.sigla = 'JAT' RETURN c, u
-    ```
+   ```cypher
+   MATCH (u:Unidade)-[:OFFERS]->(c:Curso) WHERE u.sigla = 'JAT' RETURN c, u
+   ```
 
 3. Quantidade de Cursos de Ensino Médio ofertados em todas as Unidades:
 
-    ```cypher
-    MATCH (c:Curso) WHERE c.nivel = 'Ensino Médio' RETURN count(c)
-    ```
+   ```cypher
+   MATCH (c:Curso) WHERE c.nivel = 'Ensino Médio' RETURN count(c)
+   ```
 
 ### Disciplina
 
@@ -218,7 +215,7 @@ Representa uma Disciplina que é ministrada em um Curso.
 
 #### Rótulos
 
-1. Disciplina
+1. `Disciplina`
 
 #### Propriedades
 
@@ -232,36 +229,35 @@ Representa uma Disciplina que é ministrada em um Curso.
 | sigla             | Sim         | String       |
 | frequencia_oferta | Sim         | String       |
 
-
 #### Relacionamentos
 
 - **Disciplina -[:TAUGHT_AT]➔ Curso**
 
-    Disciplina que é lecionada em um Curso.
+  Disciplina que é lecionada em um Curso.
 
 - **Unidade -[:OFFERS]➔ Curso**
 
-    Curso que oferta uma Disciplina.
+  Curso que oferta uma Disciplina.
 
 #### Consultas de exemplo
 
 1. O nome das Disciplinas lecionadas no curso de TADS da Unidade Jataí, ordenadas de maneira ascendente pelo período que são ofertadas:
 
-    ```cypher
-    MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 471 RETURN d.nome ORDER BY d.periodo
-    ```
+   ```cypher
+   MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 471 RETURN d.nome ORDER BY d.periodo
+   ```
 
 2. Quantas Disciplinas foram ofertadas nos Cursos da Unidade de Jataí:
 
-    ```cypher
-    MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso)-[:OFFERED_AT]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN count(d)
-    ```
+   ```cypher
+   MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso)-[:OFFERED_AT]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN count(d)
+   ```
 
 3. Quantidades de Disciplinas de todas Unidades agrupadas por frequência de oferta:
 
-    ```cypher
-    MATCH (d:Disciplina) RETURN d.frequencia_oferta, COUNT(d)
-    ```
+   ```cypher
+   MATCH (d:Disciplina) RETURN d.frequencia_oferta, count(d)
+   ```
 
 ### Disciplina Ministrada
 
@@ -272,7 +268,7 @@ instância de Disciplina, que foi ministrada em algum ano/período, em algum Cur
 
 #### Rótulos
 
-1. DisciplinaMinistrada
+1. `DisciplinaMinistrada`
 
 #### Propriedades
 
@@ -287,44 +283,87 @@ instância de Disciplina, que foi ministrada em algum ano/período, em algum Cur
 
 - **DisciplinaMinistrada -[:DEFINED_BY]➔ Disciplina**
 
-    Os dados da Disciplina que constituem a definição da Disciplina que foi Ministrada.
+  Os dados da Disciplina que constituem a definição da Disciplina que foi Ministrada.
 
 - **DisciplinaMinistrada -[:TAUGHT_BY]➔ Docente**
 
-    Disciplina que foi ministrada por um Docente.
+  Disciplina que foi ministrada por um Docente.
 
-    - Propriedades:
+  - Propriedades:
 
-        | Nome         | Obrigatória | Tipo de Dado | Descrição                                |
-        | ------------ | ----------- | ------------ | ---------------------------------------- |
-        | as_auxiliary | Sim         | Boolean      | Indica se o Docente atuou como auxiliar. |
+    | Nome         | Obrigatória | Tipo de Dado | Descrição                                |
+    | ------------ | ----------- | ------------ | ---------------------------------------- |
+    | as_auxiliary | Sim         | Boolean      | Indica se o Docente atuou como auxiliar. |
 
 - **Docente -[:TAUGHT]➔ DisciplinaMinistrada**
 
-    Docente que ministrou a Disciplina.
+  Docente que ministrou a Disciplina.
 
-    - Propriedades:
+  - Propriedades:
 
-        | Nome         | Obrigatória | Tipo de Dado | Descrição                                |
-        | ------------ | ----------- | ------------ | ---------------------------------------- |
-        | as_auxiliary | Sim         | Boolean      | Indica se o Docente atuou como auxiliar. |
+    | Nome         | Obrigatória | Tipo de Dado | Descrição                                |
+    | ------------ | ----------- | ------------ | ---------------------------------------- |
+    | as_auxiliary | Sim         | Boolean      | Indica se o Docente atuou como auxiliar. |
 
 #### Consultas de exemplo
 
 1. Disciplinas Ministradas por Docentes aleatórios, juntamente com o Docente e a definição de cada uma dessas Disciplinas Ministradas:
 
-    ```cypher
-    MATCH (a:Docente)-[:TAUGHT]->(b:DisciplinaMinistrada)-[:DEFINED_BY]->(c:Disciplina) RETURN a, b, c LIMIT 20
-    ```
+   ```cypher
+   MATCH (a:Docente)-[:TAUGHT]->(b:DisciplinaMinistrada)-[:DEFINED_BY]->(c:Disciplina) RETURN a, b, c LIMIT 20
+   ```
 
 2. Disciplinas Ministradas por Docentes, como docentes auxiliares:
 
-    ```cypher
-    MATCH (c:Disciplina)<-[:DEFINED_BY]-(a:DisciplinaMinistrada)-[r:TAUGHT_BY]->(b:Docente) WHERE r.as_auxiliary = true RETURN a, b, c LIMIT 20
-    ```
+   ```cypher
+   MATCH (c:Disciplina)<-[:DEFINED_BY]-(a:DisciplinaMinistrada)-[r:TAUGHT_BY]->(b:Docente) WHERE r.as_auxiliary = true RETURN a, b, c LIMIT 20
+   ```
 
 3. Quantas vezes a Disciplina de Banco de Dados I do curso de TADS da Unidade de Formosa foi ministrada:
 
+   ```cypher
+   MATCH (dm:DisciplinaMinistrada)-[:DEFINED_BY]->(d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 877 AND d.codigo = 21855 RETURN count(dm)
+   ```
+
+### Edital de Iniciação Científica
+
+Representa um Edital de Iniciação Científica que foi sediado em alguma Unidade.
+
+![diagrama edital de iniciação científica](.github/resources/graph-docs/edital-iniciacao-cientifica.svg)
+
+#### Rótulos
+
+1. `EditalIniciacaoCientifica`
+
+#### Propriedades
+
+| Nome      | Obrigatória | Tipo de Dado |
+| --------- | ----------- | ------------ |
+| codigo    | Sim         | String       |
+| ano       | Sim         | Integer      |
+| programas | Sim         | String       |
+| unidade   | Não         | String       |
+| descricao | Sim         | String       |
+
+#### Relacionamentos
+
+- **EditalIniciacaoCientifica -[:BASED_AT]➔ Unidade**
+
+  Edital de Iniciação Científica que foi sediado em uma unidade.
+
+  - **Observações:**
+    - Caso a propriedade "unidade" do Edital de Iniciação Científica esteja presente, este relacionamento não existirá.
+
+#### Consultas de exemplo
+
+1. Quantidade de Editais de Iniciação Científica agrupados por Unidades:
+
     ```cypher
-    MATCH (dm:DisciplinaMinistrada)-[:DEFINED_BY]->(d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 877 AND d.codigo = 21855 RETURN COUNT(dm)
+    MATCH (eic:EditalIniciacaoCientifica)-[:BASED_AT]->(u:Unidade) RETURN u.sigla, count(eic)
+    ```
+
+2. Os Editais de Iniciação Científica que possuem a propriedade "unidade":
+
+    ```cypher
+    MATCH (eic:EditalIniciacaoCientifica) WHERE eic.unidade IS NOT NULL RETURN eic
     ```
