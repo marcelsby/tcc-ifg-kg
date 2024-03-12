@@ -368,6 +368,60 @@ Representa um Edital de Iniciação Científica que foi sediado em alguma Unidad
    MATCH (eic:EditalIniciacaoCientifica) WHERE eic.unidade IS NOT NULL RETURN eic
    ```
 
+### Discente
+
+Representa um Discente que estudou/estuda no IFG.
+
+![diagrama discente](.github/resources/graph-docs/discente.svg)
+
+#### Rótulos
+
+1. `Discente`
+
+#### Propriedades
+
+| Nome                      | Obrigatória | Tipo de Dado |
+| ------------------------- | ----------- | ------------ |
+| codigo                    | Sim         | String       |
+| ano_ingresso              | Sim         | Integer      |
+| periodo_letivo_ingresso   | Sim         | Integer      |
+| nome_curso                | Não         | String       |
+| modalidade                | Sim         | String       |
+| formato                   | Sim         | String       |
+| sexo                      | Sim         | String       |
+| nivel                     | Sim         | String       |
+| renda_familiar_per_capita | Não         | String       |
+| etnia                     | Não         | String       |
+| ano_nascimento            | Sim         | Integer      |
+| situacao                  | Sim         | String       |
+
+#### Relacionamentos
+
+- **Discente -[:STUDY_AT]➔ Unidade**
+
+  Em qual Unidade o Discente estudou/estuda.
+
+- **Discente -[:STUDY]➔ Curso**
+
+  Qual Curso o Discente cursa/cursou.
+
+  - **Observações:**
+    - Caso as propriedade "nome_curso" do Discente esteja presente, este relacionamento não existirá.
+
+#### Consultas de exemplo
+
+1. Quantidade de Discentes que não possuem ligação com um Curso:
+
+   ```cypher
+   MATCH (d:Discente) WHERE d.nome_curso IS NOT NULL RETURN count(d)
+   ```
+
+2. Situação e quantidade de Discentes do nível Superior, para cada situação, da unidade de Jataí, ordenados de maneira descendente:
+
+   ```cypher
+   MATCH (d:Discente)-[:STUDY_AT]->(u:Unidade) WHERE u.sigla = 'JAT' AND d.nivel = "Superior" RETURN d.situacao, count(d) as c ORDER BY c DESC
+   ```
+
 ### Estágio Curricular
 
 Representa um Estágio Curricular que foi realizado por algum discente durante a realização de algum Curso.
@@ -421,6 +475,6 @@ Representa um Estágio Curricular que foi realizado por algum discente durante a
 
 3. Estágios Curriculares realizados por discentes que cursaram o Curso de Manutenção e Suporte em Informática na Unidade Jataí:
 
-    ```
-    MATCH (ec:EstagioCurricular)-[:UNDERTOOK_AT]->(c:Curso) WHERE c.codigo = 1028 RETURN ec, c
-    ```
+   ```
+   MATCH (ec:EstagioCurricular)-[:UNDERTOOK_AT]->(c:Curso) WHERE c.codigo = 1028 RETURN ec, c
+   ```
