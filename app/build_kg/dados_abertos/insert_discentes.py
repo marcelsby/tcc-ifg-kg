@@ -19,7 +19,7 @@ def execute(conn: Neo4jConnection, discentes_csv: Path):
     transactions = discentes_df.apply(_create_discente_transaction, axis=1)
 
     start = time.perf_counter()
-    conn.run_transactions_batched(transactions, 500, 300)
+    conn.run_transactions_batched(transactions, 1000, 200)
     end = time.perf_counter()
 
     print(f"[dados_abertos] Discentes ({discentes_df.shape[0]} linhas): {end - start}s")
