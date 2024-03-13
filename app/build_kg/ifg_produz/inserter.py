@@ -3,7 +3,7 @@ from app.build_kg.ifg_produz import (insert_areas_de_atuacao,
                                      insert_atuacao_profissional, insert_banca,
                                      insert_cidades, insert_curriculos,
                                      insert_formacao_academica,
-                                     insert_orientacao,
+                                     insert_grupos_pesquisa, insert_orientacao,
                                      insert_outras_producoes,
                                      insert_palavras_chaves,
                                      insert_participacao_evento,
@@ -100,6 +100,13 @@ def insert(connection: Neo4jConnection):
         storage.get_file("producao_bibliografica.csv"),
         storage.get_file("revista.csv"),
         storage.get_file("conferencia.csv")
+    )
+
+    insert_grupos_pesquisa.execute(
+        connection,
+        storage.get_file("grupos_de_pesquisa.csv"),
+        storage.get_file("linhas_de_pesquisa.csv"),
+        storage.get_file("alunos.csv")
     )
 
 

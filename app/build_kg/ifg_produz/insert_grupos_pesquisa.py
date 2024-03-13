@@ -122,7 +122,7 @@ def _create_grupo_pesquisa_transaction(row):
 def _create_grupo_pesquisa_query(row):
     properties_keys = list(row.index)
 
-    properties_to_be_removed = ["codigo_lider", "codigos_linhas_de_pesquisa", "codigos_membros"]
+    properties_to_be_removed = ["codigo_lider", "codigos_linhas_de_pesquisa", "codigo_membros"]
 
     if pd.notna(row["codigo_lider"]):
         properties_to_be_removed.append("nome_lider")
@@ -161,7 +161,7 @@ def _create_grupo_pesquisa_leader_relationship_query(row):
         GeneralFilters.integer_codigo_filter(row["codigo_lider"]),
         "GrupoPesquisa",
         GeneralFilters.integer_codigo_filter(row["codigo"]),
-        "IS_LEADER"
+        "LEADER_OF"
     )
 
     return [grupo_pesquisa_to_curriculo, curriculo_to_grupo_pesquisa]
