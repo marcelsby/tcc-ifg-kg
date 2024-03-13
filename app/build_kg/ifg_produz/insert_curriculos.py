@@ -33,7 +33,7 @@ def _create_curriculo_transaction(row):
         transaction = [*_create_curriculo_to_palavra_chave_relationship_queries(row)]
 
     if pd.notna(row["codigo_cidade_nascimento"]):
-        transaction.append(_create_curriculo_to_cidade_relationship_query(row))
+        transaction.append(_create_servidor_to_cidade_relationship_query(row))
 
     transaction.insert(0, _create_curriculo_query(row))
     transaction.insert(1, _create_servidor_to_curriculo_relationship_query(row))
@@ -72,7 +72,7 @@ def _create_curriculo_query(row):
     return create_query_builder.build()
 
 
-def _create_curriculo_to_cidade_relationship_query(row):
+def _create_servidor_to_cidade_relationship_query(row):
     return make_relationship_query(
         "Servidor",
         _Filters.servidor_matricula_filter(row["siape"]),
