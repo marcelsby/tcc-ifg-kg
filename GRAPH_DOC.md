@@ -478,3 +478,91 @@ Representa um Estágio Curricular que foi realizado por algum discente durante a
    ```
    MATCH (ec:EstagioCurricular)-[:UNDERTOOK_AT]->(c:Curso) WHERE c.codigo = 1028 RETURN ec, c
    ```
+
+### Unidade Federativa
+
+Representa uma Unidade Federativa do Brasil.
+
+![diagrama unidade federativa](.github/resources/graph-docs/unidade-federativa.svg)
+
+#### Rótulos
+
+1. `UnidadeFederativa`
+
+#### Propriedades
+
+| Nome  | Obrigatória | Tipo de Dado |
+| ----- | ----------- | ------------ |
+| sigla | Sim         | String       |
+| nome  | Sim         | String       |
+
+#### Consultas de exemplo
+
+1. O nome de todas as Unidades que o nome começa com a letra 'A':
+
+   ```cypher
+   MATCH (u:UnidadeFederativa) WHERE u.nome STARTS WITH 'A' RETURN u.nome
+   ```
+
+### Cidade
+
+Representa uma Cidade que pode fazer parte de uma Unidade Federativa do Brasil.
+
+![diagrama cidade](.github/resources/graph-docs/cidade.svg)
+
+#### Rótulos
+
+1. `Cidade`
+
+#### Propriedades
+
+| Nome       | Obrigatória | Tipo de Dado | Formato Adicional |
+| ---------- | ----------- | ------------ | ----------------- |
+| codigo     | Sim         | String       | UUIDv4            |
+| nome       | Sim         | String       |                   |
+| nome_ascii | Sim         | String       |                   |
+
+#### Relacionamentos
+
+- **Cidade -[:PART_OF]➔ UnidadeFederativa**
+
+  Indica em qual Unidade Federativa do Brasil a cidade se localiza, caso a cidade não esteja localizada no Brasil esse relacionamento não existirá.
+
+#### Consultas de exemplo
+
+1. Nome das Cidades que não estão ligadas a uma Unidade Federativa:
+
+   ```cypher
+   MATCH (c:Cidade) WHERE NOT (c)-[:PART_OF]->(:UnidadeFederativa) RETURN c.nome
+   ```
+
+2. Quantidade de Cidades presentes por Unidade Federativa:
+
+   ```cypher
+   MATCH (c:Cidade)-[:PART_OF]->(uf:UnidadeFederativa) RETURN uf.sigla, count(c) as cnt ORDER BY cnt DESC
+   ```
+
+### Palavra-chave
+
+Representa uma Palavra-chave que pode estar ligada a um Currículo.
+
+![diagrama palavra-chave](.github/resources/graph-docs/palavra-chave.svg)
+
+#### Rótulos
+
+1. `PalavraChave`
+
+#### Propriedades
+
+| Nome    | Obrigatória | Tipo de Dado |
+| ------- | ----------- | ------------ |
+| palavra | Sim         | String       |
+| correta | Sim         | String       |
+
+#### Consultas de exemplo
+
+1. 10 Palavras-chave aleatórias:
+
+   ```cypher
+   MATCH (pc:PalavraChave) RETURN pc.correta LIMIT 10
+   ```
