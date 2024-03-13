@@ -56,6 +56,32 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
    MATCH (u:Unidade) WHERE u.sigla = 'JAT' RETURN u
    ```
 
+### Servidor
+
+É um rótulo auxiliar que atua como agrupador para os servidores federais presentes no grafo, sejam eles Docentes ou TAEs.
+
+![diagrama servidor](.github/resources/graph-docs/servidor.svg)
+
+#### Relacionamentos
+
+- **Servidor -[:BORN_AT]➔ Cidade**
+
+  Cidade em que o Servidor nasceu.
+
+#### Consultas de exemplo
+
+1. Quantidade de Servidores registrados na Unidade de Anápolis:
+
+   ```cypher
+   MATCH (s:Servidor)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'ANA' RETURN count(s)
+   ```
+
+2. Quantidade de Servidores que nasceram em Goiânia:
+
+   ```cypher
+   MATCH (s:Servidor)-[:BORN_AT]->(c:Cidade)-[:PART_OF]->(uf:UnidadeFederativa) WHERE c.nome_ascii = 'goiania' AND uf.sigla = 'GO' RETURN count(s)
+   ```
+
 ### Docente
 
 Representa um docente efetivo, que obrigatóriamente possui uma matrícula SIAPE e neste caso está vinculado a alguma Unidade do IFG.
@@ -565,4 +591,52 @@ Representa uma Palavra-chave que pode estar ligada a um Currículo.
 
    ```cypher
    MATCH (pc:PalavraChave) RETURN pc.correta LIMIT 10
+   ```
+
+### Currículo
+
+Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
+
+![diagrama currículo](.github/resources/graph-docs/curriculo.svg)
+
+#### Rótulos
+
+1. `Curriculo`
+
+#### Propriedades
+
+| Campo                        | Obrigatória | Tipo de Dado |
+| ---------------------------- | ----------- | ------------ |
+| codigo                       | Sim         | Integer      |
+| aceitando_email              | Sim         | Boolean      |
+| data_nascimento              | Não         | Date         |
+| email                        | Sim         | String       |
+| link                         | Não         | String       |
+| nome_citacoes_bibliograficas | Sim         | String       |
+| nome_completo                | Sim         | String       |
+| nome_completo_sem_acento     | Sim         | String       |
+| resumo                       | Não         | String       |
+
+#### Relacionamentos
+
+- **Servidor -[:HAS]➔ Curriculo**
+
+  - **Observações:**
+    - Nem todos os Servidores possuem um Currículo no grafo, pois os dados vieram de datasets diferentes.
+
+- **Curriculo -[:HAS]➔ PalavraChave**
+  As palavras chave que estão presentes algum Currículo.
+
+#### Consultas de exemplo
+
+1. 10 Currículos aleatórios ligados aos seus respectivos Servidores:
+
+   ```cypher
+   MATCH (c:Curriculo)<-[:HAS]-(s:Servidor) RETURN c, s LIMIT 10
+   ```
+
+2. A palavra-chave que mais aparece nos Currículos e quantas vezes ela foi utilizada:
+
+   ```cypher
+   MATCH (c:Curriculo)-[r:HAS]->(pc:PalavraChave) RETURN count(r) as incidência, pc.palavra as palavra ORDER BY incidência DESC LIMIT 1
    ```
