@@ -570,7 +570,7 @@ Representa uma Cidade que pode fazer parte de uma Unidade Federativa do Brasil.
 
 ### Palavra-chave
 
-Representa uma Palavra-chave que pode estar ligada a um Currículo.
+Representa uma Palavra-chave que pode estar ligada a algum Currículo.
 
 ![diagrama palavra-chave](.github/resources/graph-docs/palavra-chave.svg)
 
@@ -625,7 +625,7 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
     - Nem todos os Servidores possuem um Currículo no grafo, pois os dados vieram de datasets diferentes.
 
 - **Curriculo -[:HAS]➔ PalavraChave**
-  As palavras chave que estão presentes algum Currículo.
+  As palavras chave que estão presentes em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -635,7 +635,7 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
    MATCH (c:Curriculo)<-[:HAS]-(s:Servidor) RETURN c, s LIMIT 10
    ```
 
-2. A palavra-chave que mais aparece nos Currículos e quantas vezes ela foi utilizada:
+2. A palavra-chave que mais aparece nos Currículos e quantas vezes ocorreu sua aparição:
 
    ```cypher
    MATCH (c:Curriculo)-[r:HAS]->(pc:PalavraChave) RETURN count(r) as incidência, pc.palavra as palavra ORDER BY incidência DESC LIMIT 1
@@ -643,7 +643,7 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
 
 ### Texto Jornal
 
-Texto publicado em algum jornal/revista por algum Currículo.
+Texto publicado em algum jornal/revista que consta em algum Currículo.
 
 ![diagrama texto jornal](.github/resources/graph-docs/texto-jornal.svg)
 
@@ -663,7 +663,7 @@ Texto publicado em algum jornal/revista por algum Currículo.
 #### Relacionamentos
 
 - **Curriculo -[:HAS]➔ TextoJornal**
-  - Textos publicados em jornais/revistas por algum Currículo.
+  - Texto publicado em um jornal/revista que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -681,9 +681,9 @@ Texto publicado em algum jornal/revista por algum Currículo.
 
 ### Banca
 
-Banca que algum Currículo participou.
+Participação em Banca que consta em algum Currículo.
 
-![diagrama texto jornal](.github/resources/graph-docs/banca.svg)
+![diagrama banca](.github/resources/graph-docs/banca.svg)
 
 #### Rótulos
 
@@ -715,4 +715,121 @@ Banca que algum Currículo participou.
 
    ```cypher
    MATCH (b:Banca) RETURN b.ano, count(b) as ano ORDER BY ano DESC
+   ```
+
+### Registro
+
+Registro de patente que consta algum Currículo.
+
+![diagrama registro](.github/resources/graph-docs/registro.svg)
+
+#### Rótulos
+
+1. `Registro`
+
+#### Propriedades
+
+| Nome   | Obrigatória | Tipo de Dado |
+| ------ | ----------- | ------------ |
+| codigo | Sim         | Integer      |
+| nome   | Sim         | String       |
+| tipo   | Sim         | String       |
+| ano    | Sim         | Integer      |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ Registro**
+  - Registro de patente que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. O cinco Servidores que possuem mais Registros de patente:
+
+   ```cypher
+   MATCH (reg:Registro)<-[r:HAS]-(c:Curriculo)<-[:HAS]-(s:Servidor) RETURN s.nome, s.matricula, s.atribuicao, count(r) as qtd_registros ORDER BY qtd_registros DESC LIMIT 5
+   ```
+
+### Participação em Evento
+
+Participação em algum evento que consta em algum Currículo.
+
+![diagrama participação em evento](.github/resources/graph-docs/participacao-evento.svg)
+
+#### Rótulos
+
+1. `ParticipacaoEvento`
+
+#### Propriedades
+
+| Nome                  | Obrigatória | Tipo de Dado |
+| --------------------- | ----------- | ------------ |
+| codigo                | Sim         | Integer      |
+| titulo                | Não         | String       |
+| ano                   | Sim         | Integer      |
+| natureza              | Sim         | String       |
+| tipo                  | Não         | String       |
+| forma                 | Não         | String       |
+| divulgacao_cientifica | Não         | Boolean      |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ ParticipacaoEvento**
+  - Participação em um evento que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. 5 anos que mais houveram Participações:
+
+   ```cypher
+   MATCH (pe:ParticipacaoEvento)<-[:HAS]-(c:Curriculo) RETURN pe.ano, count(pe) as qtd_participacoes ORDER BY qtd_participacoes DESC LIMIT 5
+   ```
+
+### Projeto de Pesquisa
+
+Projeto de Pesquisa que consta em algum Currículo.
+
+![diagrama projeto de pesquisa](.github/resources/graph-docs/projeto-pesquisa.svg)
+
+#### Rótulos
+
+1. `ProjetoPesquisa`
+
+#### Propriedades
+
+| Nome                     | Obrigatória | Tipo de Dado |
+| ------------------------ | ----------- | ------------ |
+| codigo                   | Sim         | Integer      |
+| nome                     | Sim         | String       |
+| descricao                | Não         | String       |
+| ano_inicio               | Sim         | Integer      |
+| ano_termino              | Não         | Integer      |
+| financiador_projeto      | Não         | String       |
+| instituicao_financiadora | Não         | String       |
+| orgao                    | Não         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ ProjetoPesquisa**
+
+  - Projeto de Pesquisa que consta em algum Currículo.
+
+- **ProjetoPesquisa -[:BASED_AT]➔ Unidade**
+  - Em qual(is) Unidade(s) o Projeto de Pesquisa foi sediado.
+
+#### Consultas de exemplo
+
+1. Projetos de pesquisa que foram sediados em mais de uma Unidade:
+
+   ```cypher
+   MATCH (pp:ProjetoPesquisa)-[:BASED_AT]->(u:Unidade)
+   WITH pp, COUNT(DISTINCT u) as numUnidades
+   WHERE numUnidades > 1
+   MATCH (pp:ProjetoPesquisa)-[:BASED_AT]->(u:Unidade)
+   RETURN pp, u
+   ```
+
+2. O Currículo que possui mais Projetos de Pesquisa, qual a quantidade de Projetos encontrados e qual o link para o Currículo:
+
+   ```cypher
+   MATCH (pp:ProjetoPesquisa)<-[:HAS]-(c:Curriculo) RETURN c.link, count(pp) as qtd_projetos_pesquisa ORDER BY qtd_projetos_pesquisa DESC LIMIT 1
    ```
