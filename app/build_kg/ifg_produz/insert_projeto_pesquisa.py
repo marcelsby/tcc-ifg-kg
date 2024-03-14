@@ -7,7 +7,8 @@ from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
                                    make_relationship_query)
 from app.build_kg.utils import (GeneralFilters,
-                                cqb_add_property_when_value_not_absent)
+                                cqb_add_property_when_value_not_absent,
+                                remove_properties)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
@@ -25,16 +26,26 @@ def execute(conn: Neo4jConnection, projetos_pesquisa_csv: Path):
 
 
 def _create_projeto_pesquisa_transaction(row):
-    create_query = _create_projeto_pesquisa_query(row)
-    curriculo_to_projeto_pesquisa_rel_query = _create_curriculo_to_projeto_pesquisa_relationship_query(row)
+    transaction = []
 
-    return create_query, curriculo_to_projeto_pesquisa_rel_query
+    properties_to_remove = []
+
+    if pd.notna(row["sigla_orgao"]):
+        properties_to_remove.append("orgao")
+        transaction.extend(_create_projeto_pesquisa_to_unidade_relationship_queries(row))
+
+    transaction.append(_create_curriculo_to_projeto_pesquisa_relationship_query(row))
+
+    transaction.insert(0, _create_projeto_pesquisa_query(row, properties_to_remove))
+
+    return tuple(transaction)
 
 
-def _create_projeto_pesquisa_query(row):
+def _create_projeto_pesquisa_query(row, properties_to_remove: list[str]):
     properties_keys = list(row.index)
 
-    properties_keys.remove("codigo_curriculo")
+    properties_keys = remove_properties(["codigo_curriculo", "orgao_normalizado",
+                                        "sigla_orgao", *properties_to_remove], properties_keys)
 
     create_query_builder = CypherCreateQueryBuilder("ProjetoPesquisa")
 
@@ -62,6 +73,23 @@ def _create_curriculo_to_projeto_pesquisa_relationship_query(row):
         GeneralFilters.integer_codigo_filter(row["codigo"]),
         "HAS"
     )
+
+
+def _create_projeto_pesquisa_to_unidade_relationship_queries(row):
+    queries = []
+
+    for sigla in row["sigla_orgao"].split(","):
+        query = make_relationship_query(
+            "ProjetoPesquisa",
+            GeneralFilters.integer_codigo_filter(row["codigo"]),
+            "Unidade",
+            GeneralFilters.string_filter("sigla", sigla),
+            "BASED_AT"
+        )
+
+        queries.append(query)
+
+    return queries
 
 
 if __name__ == '__main__':
