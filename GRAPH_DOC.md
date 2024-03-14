@@ -605,7 +605,7 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
 
 #### Propriedades
 
-| Campo                        | Obrigatória | Tipo de Dado |
+| Nome                         | Obrigatória | Tipo de Dado |
 | ---------------------------- | ----------- | ------------ |
 | codigo                       | Sim         | Integer      |
 | aceitando_email              | Sim         | Boolean      |
@@ -639,4 +639,80 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
 
    ```cypher
    MATCH (c:Curriculo)-[r:HAS]->(pc:PalavraChave) RETURN count(r) as incidência, pc.palavra as palavra ORDER BY incidência DESC LIMIT 1
+   ```
+
+### Texto Jornal
+
+Texto publicado em algum jornal/revista por algum Currículo.
+
+![diagrama texto jornal](.github/resources/graph-docs/texto-jornal.svg)
+
+#### Rótulos
+
+1. `TextoJornal`
+
+#### Propriedades
+
+| Nome     | Obrigatória | Tipo de Dado |
+| -------- | ----------- | ------------ |
+| codigo   | Sim         | Integer      |
+| natureza | Sim         | String       |
+| titulo   | Sim         | String       |
+| ano      | Sim         | Integer      |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ TextoJornal**
+  - Textos publicados em jornais/revistas por algum Currículo.
+
+#### Consultas de exemplo
+
+1. 20 publicações aleatórias:
+
+   ```cypher
+   MATCH (tj:TextoJornal) RETURN tj LIMIT 20
+   ```
+
+2. Quantidade de publicações por ano ordenadas por ano com mais publicações:
+
+   ```cypher
+   MATCH (tj:TextoJornal) RETURN tj.ano, count(tj) as quantidade ORDER BY quantidade DESC
+   ```
+
+### Banca
+
+Banca que algum Currículo participou.
+
+![diagrama texto jornal](.github/resources/graph-docs/banca.svg)
+
+#### Rótulos
+
+1. `Banca`
+
+#### Propriedades
+
+| Nome     | Obrigatória | Tipo de Dado |
+| -------- | ----------- | ------------ |
+| codigo   | Sim         | Integer      |
+| natureza | Sim         | String       |
+| titulo   | Sim         | String       |
+| ano      | Sim         | Integer      |
+
+#### Relacionamentos
+
+- **Curriculo -[:PART_OF]➔ Banca**
+  - Banca que o Currículo participou.
+
+#### Consultas de exemplo
+
+1. Quantidade de Bancas que Currículos de Servidores de Jataí participaram:
+
+   ```cypher
+   MATCH (b:Banca)<-[:PART_OF]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN count(b)
+   ```
+
+2. Quantidade de Bancas por ano e qual ano teve mais bancas participadas:
+
+   ```cypher
+   MATCH (b:Banca) RETURN b.ano, count(b) as ano ORDER BY ano DESC
    ```
