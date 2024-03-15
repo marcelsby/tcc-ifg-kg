@@ -7,7 +7,7 @@ from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
                                    make_relationship_query)
 from app.build_kg.utils import (GeneralFilters,
-                                cqb_add_property_when_value_not_absent)
+                                cqb_add_property_when_value_not_absent, remove_properties)
 from app.utils.environment import Environment
 from app.utils.storage import Storage
 
@@ -25,16 +25,25 @@ def execute(conn: Neo4jConnection, formacao_academica_csv: Path):
 
 
 def _create_formacao_academica_transaction(row):
-    create_query = _create_formacao_academica_query(row)
-    curriculo_to_formacao_academica_rel_query = _create_curriculo_to_formacao_academica_relationship_query(row)
+    transaction = []
 
-    return create_query, curriculo_to_formacao_academica_rel_query
+    properties_to_remove = []
+
+    if pd.notna(row["sigla_instituicao"]):
+        properties_to_remove.append("nome_instituicao")
+        transaction.append(_create_formacao_academica_to_unidade_relationship_query(row))
+
+    transaction.append(_create_curriculo_to_formacao_academica_relationship_query(row))
+    transaction.insert(0, _create_formacao_academica_query(row, properties_to_remove))
+
+    return tuple(transaction)
 
 
-def _create_formacao_academica_query(row):
+def _create_formacao_academica_query(row, properties_keys_to_remove: list[str]):
     properties_keys = list(row.index)
 
-    properties_keys.remove("codigo_curriculo")
+    properties_keys = remove_properties([*properties_keys_to_remove, "codigo_curriculo", "sigla_instituicao"],
+                                        properties_keys)
 
     create_query_builder = CypherCreateQueryBuilder("FormacaoAcademica")
 
@@ -61,6 +70,16 @@ def _create_curriculo_to_formacao_academica_relationship_query(row):
         "FormacaoAcademica",
         GeneralFilters.integer_codigo_filter(row["codigo"]),
         "HAS"
+    )
+
+
+def _create_formacao_academica_to_unidade_relationship_query(row):
+    return make_relationship_query(
+        "FormacaoAcademica",
+        GeneralFilters.integer_codigo_filter(row["codigo"]),
+        "Unidade",
+        GeneralFilters.string_filter("sigla", row["sigla_instituicao"]),
+        "AT"
     )
 
 
