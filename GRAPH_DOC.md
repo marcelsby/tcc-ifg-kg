@@ -846,7 +846,7 @@ Orientação que consta em algum Currículo.
 
 #### Propriedades
 
-| Nome           | Obrigatório | Tipo de Dado |
+| Nome           | Obrigatória | Tipo de Dado |
 | -------------- | ----------- | ------------ |
 | codigo         | Sim         | Integer      |
 | tipo           | Sim         | String       |
@@ -881,7 +881,7 @@ Atuação Profissional que consta em algum Currículo.
 
 #### Propriedades
 
-| Nome                | Obrigatório | Tipo de Dado |
+| Nome                | Obrigatória | Tipo de Dado |
 | ------------------- | ----------- | ------------ |
 | codigo              | Sim         | Integer      |
 | nome_da_instituicao | Sim         | String       |
@@ -913,7 +913,7 @@ Atuação Profissional que consta em algum Currículo.
 
 #### Propriedades
 
-| Nome                | Obrigatório | Tipo de Dado |
+| Nome                | Obrigatória | Tipo de Dado |
 | ------------------- | ----------- | ------------ |
 | codigo              | Sim         | Integer      |
 | nome_da_instituicao | Sim         | String       |
@@ -935,7 +935,7 @@ Atuação Profissional que consta em algum Currículo.
 
 ### Atividade
 
-Atividade que era executada durante o exercício de uma Atuação Profissional
+Atividade que era executada durante o exercício de uma Atuação Profissional.
 
 ![diagrama atividade](.github/resources/graph-docs/atividade.svg)
 
@@ -945,11 +945,11 @@ Atividade que era executada durante o exercício de uma Atuação Profissional
 
 #### Propriedades
 
-| Nome                       | Obrigatório | Tipo de Dado |
-|-----------------------------|-------------|--------------|
-| codigo                      | Sim         | String       |
-| ano_inicio                  | Sim         | Integer      |
-| cargo                       | Sim         | String       |
+| Nome       | Obrigatória | Tipo de Dado |
+| ---------- | ----------- | ------------ |
+| codigo     | Sim         | Integer      |
+| ano_inicio | Sim         | Integer      |
+| cargo      | Sim         | String       |
 
 #### Relacionamentos
 
@@ -963,4 +963,44 @@ Atividade que era executada durante o exercício de uma Atuação Profissional
 
    ```cypher
    MATCH (at:Atividade)<-[:HAS]-(ap:AtuacaoProfissional)<-[:HAS]-(c:Curriculo) RETURN at, ap, c LIMIT 10
+   ```
+
+### Produção Técnica
+
+Produção Técnica que consta em algum Currículo.
+
+![diagrama produção técnica](.github/resources/graph-docs/producao-tecnica.svg)
+
+#### Rótulos
+
+1. `ProducaoTecnica`
+
+#### Propriedades
+
+| Nome       | Obrigatória | Tipo de Dado |
+| ---------- | ----------- | ------------ |
+| codigo     | Sim         | Integer      |
+| nome       | Sim         | String       |
+| ano        | Sim         | Integer      |
+| natureza   | Não         | String       |
+| finalidade | Não         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ ProducaoTecnica**
+
+  - Produção Técnica que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. Quantidade de Produções Técnicas agrupadas por Unidade, com a quantidade ordenada de forma decrescente:
+
+   ```cypher
+   MATCH (pt:ProducaoTecnica)<-[:HAS]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) RETURN u.sigla, count(pt) as qtd_producoes ORDER BY qtd_producoes DESC
+   ```
+
+2. Quantidade de Produções Técnicas agrupadas por ano, a quantidade ordenada de forma decrescente:
+
+   ```cypher
+   MATCH (pt:ProducaoTecnica)<-[:HAS]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) RETURN pt.ano, count(pt) as qtd_producoes ORDER BY qtd_producoes DESC
    ```
