@@ -1249,3 +1249,119 @@ Uma Produção Bibliográfica que pode estar ligada a uma Revista ou a uma Confe
    WITH publicadasEmRevista, count(pb) as publicadasEmConferencia
    RETURN publicadasEmRevista, publicadasEmConferencia
    ```
+
+### Linha de Pesquisa
+
+A definição de uma Linha de Pesquisa.
+
+![diagrama linha de pesquisa](.github/resources/graph-docs/linha-pesquisa.svg)
+
+#### Rótulos
+
+1. `LinhaPesquisa`
+
+#### Propriedades
+
+| Nome   | Obrigatória | Tipo de Dado |
+| ------ | ----------- | ------------ |
+| codigo | Sim         | Integer      |
+| titulo | Sim         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:STUDY]➔ LinhaPesquisa**
+
+  - A Linha de Pesquisa estudada pelo pesquisador, que consta no Currículo.
+
+#### Consultas de exemplo
+
+1. 20 Linhas de Pesquisas aleatórias juntamente com seus Currículos que as estudam:
+
+   ```cypher
+   MATCH (lp:LinhaPesquisa)<-[:STUDY]-(c:Curriculo) RETURN lp, c LIMIT 20
+   ```
+
+### Grupo de Pesquisa
+
+A definição de um Grupo de Pesquisa.
+
+![diagrama grupo de pesquisa](.github/resources/graph-docs/grupo-pesquisa.svg)
+
+#### Rótulos
+
+1. `GrupoPesquisa`
+
+#### Propriedades
+
+| Nome                   | Obrigatória | Tipo de Dado |
+| ---------------------- | ----------- | ------------ |
+| codigo                 | Sim         | Integer      |
+| ano_formacao           | Sim         | Integer      |
+| link                   | Sim         | String       |
+| nome                   | Sim         | String       |
+| nome_lider             | Não         | String       |
+| situacao               | Sim         | String       |
+| situacao_por_criterios | Sim         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:PART_OF]➔ GrupoPesquisa**
+
+  - O Grupo de Pesquisa que consta no Currículo do pesquisador que ele faz parte.
+
+- **GrupoPesquisa -[:HAS_MEMBER]➔ Curriculo**
+
+  - Indica que o Grupo de Pesquisa possui como membro o pesquisador ao qual pertence o Currículo.
+
+- **GrupoPesquisa -[:STUDY]➔ LinhaPesquisa**
+
+  - Indica uma Linha de Pesquisa que o Grupo de Pesquisa estuda.
+
+#### Consultas de exemplo
+
+1. Currículos dos pesquisadores que fazem parte de um Grupo de Pesquisa:
+
+   ```cypher
+   MATCH (c:Curriculo)-[:PART_OF]->(gp:GrupoPesquisa) RETURN c, gp LIMIT 30
+   ```
+
+2. Linhas de Pesquisa que Grupos de Pesquisa aleatórios estudam:
+
+   ```cypher
+   MATCH (gp:GrupoPesquisa)-[:STUDY]->(lp:LinhaPesquisa) RETURN gp, lp LIMIT 30
+   ```
+
+### Discente participante de um Grupo de Pesquisa
+
+A definição de um Discente participante de um Grupo de Pesquisa. Este Discente não é o mesmo que foi citado anteriormente, são dados diferentes, esse é mais específico.
+
+![diagrama discente grupo de pesquisa](.github/resources/graph-docs/discente-grupo-pesquisa.svg)
+
+#### Rótulos
+
+1. `DiscenteGrupoPesquisa`
+
+#### Propriedades
+
+| Nome   | Obrigatória | Tipo de Dado |
+| ------ | ----------- | ------------ |
+| codigo | Sim         | Integer      |
+| nome   | Sim         | String       |
+
+#### Relacionamentos
+
+- **DiscenteGrupoPesquisa -[:PART_OF]➔ GrupoPesquisa**
+
+  - Indica a relação de um DiscenteGrupoPesquisa que participa de um Grupo de Pesquisa.
+
+- **GrupoPesquisa -[:HAS_MEMBER]➔ DiscenteGrupoPesquisa**
+
+  - Indica que o Grupo de Pesquisa possui como membro um DiscenteGrupoPesquisa.
+
+#### Consultas de exemplo
+
+1. DiscentesGrupoPesquisa que fazem parte de Grupos de Pesquisa aleatórios:
+
+   ```cypher
+   MATCH (dgp:DiscenteGrupoPesquisa)-[:PART_OF]->(gp:GrupoPesquisa) RETURN dgp, gp LIMIT 50
+   ```
