@@ -1123,3 +1123,129 @@ Formação Acadêmica que consta em algum Currículo.
    ```cypher
    MATCH (fa:FormacaoAcademica) WHERE fa.ano_inicio >= 2000 RETURN fa.status_curso, count(fa)
    ```
+
+### Conferência
+
+Definição de uma Conferência.
+
+![diagrama conferência](.github/resources/graph-docs/conferencia.svg)
+
+#### Rótulos
+
+1. `Conferencia`
+
+#### Propriedades
+
+| Nome   | Obrigatória | Tipo de Dado |
+| ------ | ----------- | ------------ |
+| codigo | Sim         | Integer      |
+| sigla  | Sim         | String       |
+| nome   | Sim         | String       |
+| qualis | Sim         | String       |
+
+#### Consultas de exemplo
+
+1. Quantidade de Conferências onde o qualis é "A1":
+
+   ```cypher
+   MATCH (c:Conferencia) WHERE c.qualis = 'A1' RETURN count(c)
+   ```
+
+2. O nome da Conferência que possui a sigla "AAAI":
+
+   ```cypher
+   MATCH (c:Conferencia) WHERE c.sigla = 'AAAI' RETURN c.nome
+   ```
+
+### Revista
+
+Definição de uma Revista.
+
+![diagrama revista](.github/resources/graph-docs/revista.svg)
+
+#### Rótulos
+
+1. `Revista`
+
+#### Propriedades
+
+| Nome            | Obrigatória | Tipo de Dado |
+| --------------- | ----------- | ------------ |
+| codigo          | Sim         | Integer      |
+| nome            | Sim         | String       |
+| qualificacao    | Sim         | String       |
+| area_de_atuacao | Sim         | String       |
+| issn            | Sim         | String       |
+
+#### Consultas de exemplo
+
+1. Quantidade de Revista onde q qualificação é "A1":
+
+   ```cypher
+   MATCH (r:Revista) WHERE r.qualificacao = 'A1' RETURN count(r)
+   ```
+
+2. O nome da Conferência que possui o ISSN "0026-9247":
+
+   ```cypher
+   MATCH (r:Revista) WHERE r.issn = '0026-9247' RETURN DISTINCT r.nome
+   ```
+
+### Produção Bibliográfica
+
+Uma Produção Bibliográfica que pode estar ligada a uma Revista ou a uma Conferência.
+
+![diagrama produção bibliográfica](.github/resources/graph-docs/producao-bibliografica.svg)
+
+#### Rótulos
+
+1. `ProducaoBibliografica`
+
+#### Propriedades
+
+| Nome                    | Obrigatória | Tipo de Dado |
+| ----------------------- | ----------- | ------------ |
+| codigo                  | Sim         | Integer      |
+| doi_producao            | Não         | String       |
+| natureza                | Não         | String       |
+| ano                     | Sim         | Integer      |
+| idioma                  | Sim         | String       |
+| tipo                    | Não         | String       |
+| titulo                  | Sim         | String       |
+| classificacao_do_evento | Não         | String       |
+| meio_divulgacao         | Não         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ ProducaoBibliografica**
+
+  - Publicação Bibliográfica que consta em algum Currículo.
+
+- **ProducaoBibliografica -[:PRESENTED_AT]➔ Revista**
+
+  Produção Bibliográfica que foi apresentada em uma Revista.
+
+- **ProducaoBibliografica -[:PRESENTED_AT]➔ Conferencia**
+
+  Produção Bibliográfica que foi apresentada em uma Conferência.
+
+#### Consultas de exemplo
+
+1. 10 Currículos que mais possuem Produções Bibliográficas:
+
+   ```cypher
+   MATCH (pb:ProducaoBibliografica)<-[:HAS]-(c:Curriculo)
+   RETURN count(pb) as qtd_producoes_bibliograficas, c.nome_completo
+   ORDER BY qtd_producoes_bibliograficas DESC
+   LIMIT 10
+   ```
+
+2. Quantidade de Produções Bibliográficas que foram publicadas em Revistas e em Conferências:
+
+   ```cypher
+   MATCH (pb:ProducaoBibliografica)-[:PRESENTED_AT]->(r:Revista)
+   WITH count(pb) as publicadasEmRevista
+   MATCH (pb:ProducaoBibliografica)-[:PRESENTED_AT]->(c:Conferencia)
+   WITH publicadasEmRevista, count(pb) as publicadasEmConferencia
+   RETURN publicadasEmRevista, publicadasEmConferencia
+   ```
