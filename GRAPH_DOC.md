@@ -1075,3 +1075,51 @@ Outra Produção que consta em algum Currículo.
    ```cypher
    MATCH (a:AreaAtuacao) RETURN count(DISTINCT a.area_do_conhecimento)
    ```
+
+### Formação Acadêmica
+
+Formação Acadêmica que consta em algum Currículo.
+
+![diagrama formação acadêmica](.github/resources/graph-docs/formacao-academica.svg)
+
+#### Rótulos
+
+1. `FormacaoAcademica`
+
+#### Propriedades
+
+| Nome             | Obrigatória | Tipo de Dado |
+| ---------------- | ----------- | ------------ |
+| codigo           | Sim         | Integer      |
+| nome_instituicao | Não         | String       |
+| nome_curso       | Não         | String       |
+| ano_inicio       | Sim         | Integer      |
+| ano_conclusao    | Não         | Integer      |
+| status_curso     | Sim         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ FormacaoAcademica**
+
+  - Formação Acadêmica que consta em algum Currículo.
+
+- **FormacaoAcademica -[:AT]➔ Unidade**
+
+  Em qual Unidade a Formação Acadêmica foi ou está sendo realizada.
+
+  - **Observações:**
+    - Caso a propriedade "nome_instituicao" da Formação Acadêmica esteja presente, este relacionamento não existirá.
+
+#### Consultas de exemplo
+
+1. Formações Acadêmicas realizadas/em andamento na Unidade de Jataí:
+
+   ```cypher
+   MATCH (c:Curriculo)-[:HAS]->(fa:FormacaoAcademica)-[:AT]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN fa, u, c
+   ```
+
+2. Quantidade de Formações Acadêmicas iniciadas a partir do ano 2000 agrupadas pelo seu status:
+
+   ```cypher
+   MATCH (fa:FormacaoAcademica) WHERE fa.ano_inicio >= 2000 RETURN fa.status_curso, count(fa)
+   ```
