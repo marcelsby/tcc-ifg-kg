@@ -833,3 +833,38 @@ Projeto de Pesquisa que consta em algum Currículo.
    ```cypher
    MATCH (pp:ProjetoPesquisa)<-[:HAS]-(c:Curriculo) RETURN c.link, count(pp) as qtd_projetos_pesquisa ORDER BY qtd_projetos_pesquisa DESC LIMIT 1
    ```
+
+### Orientação
+
+Orientação que consta em algum Currículo.
+
+![diagrama orientação](.github/resources/graph-docs/orientacao.svg)
+
+#### Rótulos
+
+1. `Orientacao`
+
+#### Propriedades
+
+| Nome           | Obrigatório | Tipo de Dado |
+| -------------- | ----------- | ------------ |
+| codigo         | Sim         | Integer      |
+| tipo           | Sim         | String       |
+| titulo         | Sim         | String       |
+| ano            | Sim         | Integer      |
+| nome_orientado | Não         | String       |
+| concluida      | Sim         | Boolean      |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ Orientacao**
+
+  - Orientação que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. Quantidade de Orientações concluídas e não concluídas:
+
+   ```cypher
+   MATCH(c:Orientacao) RETURN c.concluida, count(c)
+   ```
