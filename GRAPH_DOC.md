@@ -900,3 +900,67 @@ Atuação Profissional que consta em algum Currículo.
    ```cypher
    MATCH (ap:AtuacaoProfissional) WHERE ap.ano_trabalho IS NULL RETURN count(ap)
    ```
+
+### Atuação Profissional
+
+Atuação Profissional que consta em algum Currículo.
+
+![diagrama atuação profissional](.github/resources/graph-docs/atuacao-profissional.svg)
+
+#### Rótulos
+
+1. `AtuacaoProfissional`
+
+#### Propriedades
+
+| Nome                | Obrigatório | Tipo de Dado |
+| ------------------- | ----------- | ------------ |
+| codigo              | Sim         | Integer      |
+| nome_da_instituicao | Sim         | String       |
+| ano_trabalho        | Não         | Integer      |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ AtuacaoProfissional**
+
+  - Atuação Profissional que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. Quantidade de Atuações Profissionais sem ano de trabalho definido:
+
+   ```cypher
+   MATCH (ap:AtuacaoProfissional) WHERE ap.ano_trabalho IS NULL RETURN count(ap)
+   ```
+
+### Atividade
+
+Atividade que era executada durante o exercício de uma Atuação Profissional
+
+![diagrama atividade](.github/resources/graph-docs/atividade.svg)
+
+#### Rótulos
+
+1. `Atividade`
+
+#### Propriedades
+
+| Nome                       | Obrigatório | Tipo de Dado |
+|-----------------------------|-------------|--------------|
+| codigo                      | Sim         | String       |
+| ano_inicio                  | Sim         | Integer      |
+| cargo                       | Sim         | String       |
+
+#### Relacionamentos
+
+- **AtuacaoProfissional -[:HAS]➔ Atividade**
+
+  - Atividade que era executada durante uma Atuação Profissional.
+
+#### Consultas de exemplo
+
+1. 10 Atividades com suas respectivas Atuações Profissionais e Currículos:
+
+   ```cypher
+   MATCH (at:Atividade)<-[:HAS]-(ap:AtuacaoProfissional)<-[:HAS]-(c:Curriculo) RETURN at, ap, c LIMIT 10
+   ```
