@@ -13,7 +13,7 @@ from app.utils.storage import Storage
 
 
 def execute(conn: Neo4jConnection, orientacao_csv: Path):
-    orientacao_df = pd.read_csv(orientacao_csv, delimiter=";", converters={"concluida": bool})
+    orientacao_df = pd.read_csv(orientacao_csv, delimiter=";", dtype={"concluida": "boolean"})
 
     transactions = orientacao_df.apply(_create_orientacao_transaction, axis=1)
 

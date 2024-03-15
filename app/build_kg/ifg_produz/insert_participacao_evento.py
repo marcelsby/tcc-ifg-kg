@@ -14,7 +14,7 @@ from app.utils.storage import Storage
 
 def execute(conn: Neo4jConnection, participacao_evento_csv: Path):
     participacao_evento_df = pd.read_csv(participacao_evento_csv, delimiter=";",
-                                         converters={"divulgacao_cientifica": bool})
+                                         dtype={"divulgacao_cientifica": "boolean"})
 
     transactions = participacao_evento_df.apply(_create_participacao_evento_transaction, axis=1)
 

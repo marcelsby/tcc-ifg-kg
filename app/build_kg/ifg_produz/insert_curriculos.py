@@ -15,7 +15,7 @@ from app.utils.storage import Storage
 
 
 def execute(conn: Neo4jConnection, curriculos_csv: Path):
-    curriculos_df = pd.read_csv(curriculos_csv, delimiter=";", converters={"aceitando_email": bool})
+    curriculos_df = pd.read_csv(curriculos_csv, delimiter=";", dtype={"aceitando_email": "boolean"})
 
     transactions = curriculos_df.apply(_create_curriculo_transaction, axis=1)
 
