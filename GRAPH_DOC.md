@@ -1038,6 +1038,40 @@ Outra Produção que consta em algum Currículo.
 
    ```cypher
    MATCH (c:Curriculo)-[:HAS]->(op:OutraProducao)
-   RETURN c.link, c.nome_completo, COUNT(op) AS numProducoes 
+   RETURN c.link, c.nome_completo, COUNT(op) AS numProducoes
    ORDER BY numProducoes DESC
+   ```
+
+### Área de Atuação
+
+Área de Atuação que consta em algum Currículo.
+
+![diagrama área de atuação](.github/resources/graph-docs/area-atuacao.svg)
+
+#### Rótulos
+
+1. `AreaAtuacao`
+
+#### Propriedades
+
+| Nome                     | Obrigatória | Tipo de Dado |
+| ------------------------ | ----------- | ------------ |
+| codigo                   | Sim         | Integer      |
+| grande_area_conhecimento | Sim         | String       |
+| especialidade            | Não         | String       |
+| area_do_conhecimento     | Não         | String       |
+| subarea_do_conhecimento  | Não         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ AreaAtuacao**
+
+  - Área de Atuação que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. Quantidade de áreas do conhecimento distintas que existem no grafo:
+
+   ```cypher
+   MATCH (a:AreaAtuacao) RETURN count(DISTINCT a.area_do_conhecimento)
    ```
