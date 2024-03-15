@@ -1004,3 +1004,40 @@ Produção Técnica que consta em algum Currículo.
    ```cypher
    MATCH (pt:ProducaoTecnica)<-[:HAS]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) RETURN pt.ano, count(pt) as qtd_producoes ORDER BY qtd_producoes DESC
    ```
+
+### Outra Produção
+
+Outra Produção que consta em algum Currículo.
+
+![diagrama outra produção](.github/resources/graph-docs/outra-producao.svg)
+
+#### Rótulos
+
+1. `OutraProducao`
+
+#### Propriedades
+
+| Nome               | Obrigatória | Tipo de Dado |
+| ------------------ | ----------- | ------------ |
+| codigo             | Sim         | Integer      |
+| nome               | Sim         | String       |
+| ano                | Sim         | Integer      |
+| natureza           | Não         | String       |
+| tipo               | Sim         | String       |
+| meio_de_divulgacao | Não         | String       |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ OutraProducao**
+
+  - Outra Produção que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. Quantidade de Outras Produções por Currículo, ordenada de maneira descendente:
+
+   ```cypher
+   MATCH (c:Curriculo)-[:HAS]->(op:OutraProducao)
+   RETURN c.link, c.nome_completo, COUNT(op) AS numProducoes 
+   ORDER BY numProducoes DESC
+   ```
