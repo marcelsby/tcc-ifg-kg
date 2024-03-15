@@ -868,3 +868,35 @@ Orientação que consta em algum Currículo.
    ```cypher
    MATCH(c:Orientacao) RETURN c.concluida, count(c)
    ```
+
+### Atuação Profissional
+
+Atuação Profissional que consta em algum Currículo.
+
+![diagrama atuação profissional](.github/resources/graph-docs/atuacao-profissional.svg)
+
+#### Rótulos
+
+1. `AtuacaoProfissional`
+
+#### Propriedades
+
+| Nome                | Obrigatório | Tipo de Dado |
+| ------------------- | ----------- | ------------ |
+| codigo              | Sim         | Integer      |
+| nome_da_instituicao | Sim         | String       |
+| ano_trabalho        | Não         | Integer      |
+
+#### Relacionamentos
+
+- **Curriculo -[:HAS]➔ AtuacaoProfissional**
+
+  - Atuação Profissional que consta em algum Currículo.
+
+#### Consultas de exemplo
+
+1. Quantidade de Atuações Profissionais sem ano de trabalho definido:
+
+   ```cypher
+   MATCH (ap:AtuacaoProfissional) WHERE ap.ano_trabalho IS NULL RETURN count(ap)
+   ```
