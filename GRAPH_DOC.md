@@ -1,23 +1,38 @@
 # Diagrama Estrutural do Grafo do Conhecimento do IFG
 
-O presente documento apresenta o diagrama detalhado do Grafo do Conhecimento Acadêmico, construído a partir da estrutura semântica dos dados do Instituto Federal de Goiás (IFG). Esse grafo, armazenado no banco de dados [Neo4j](https://neo4j.com/docs/getting-started/get-started-with-neo4j/graph-database/), representa de forma visual e organizada as entidades e seus relacionamentos do ambiente acadêmico do IFG.
+O presente documento apresenta o diagrama detalhado do Grafo do Conhecimento Acadêmico, construído a partir da estrutura semântica dos dados do Instituto Federal de Goiás (IFG). Esse grafo, armazenado no banco de dados [Neo4j](https://neo4j.com/docs/getting-started/get-started-with-neo4j/graph-database/), possibilita a representação dos dados de maneira visual (e intuitiva) das entidades e seus relacionamentos do ambiente acadêmico do IFG.
 
 O diagrama abrange a estrutura do grafo, destacando os diferentes tipos de nós e suas propriedades (também podendo ser chamadas de atributos, um par de chave-valor), bem como os relacionamentos entre eles. Essa representação proporciona uma visão clara e abrangente da complexidade das informações acadêmicas, auxiliando na compreensão e análise dos dados.
 
-Ao explorar esse diagrama juntamente com a documentação abaixo, é possível visualizar a interconexão entre cursos, disciplinas, docentes, discentes e demais elementos do ambiente acadêmico, contribuindo para uma melhor compreensão da estrutura melhor acessibilidade à escrita de consultas utilizando a linguagem [Cypher](<https://en.wikipedia.org/wiki/Cypher_(query_language)>).
-
-![diagrama principal](.github/resources/diagram_documentation/main.svg)
-[Clique aqui](.github/resources/diagram_documentation/main.svg) para ver o diagrama em uma nova aba.
+Ao explorar esse diagrama juntamente com a documentação abaixo, é possível visualizar a interconexão entre Cursos, Disciplinas, Docentes, Discentes e demais elementos do ambiente acadêmico, contribuindo para uma melhor compreensão da estrutura e uma boa introdução à escrita de consultas utilizando a linguagem [Cypher](<https://en.wikipedia.org/wiki/Cypher_(query_language)>), linguagem de consulta específica do Neo4j.
 
 ## Estrutura da documentação
 
-Apresente a estrutura da documentação, destacando os principais capítulos e seções. Isso ajudará o leitor a ter uma visão geral do conteúdo e a encontrar facilmente as informações de seu interesse.
+No capítulo de [Recursos de Suporte](#recursos-de-suporte) estão alguns links para auxiliar o leitor que estiver iniciando seu aprendizado com bancos de dados orientados a grafos e o Neo4j em específico, com esses materiais espera-se que o leitor consiga ter um norte para aprender o necessário de Cypher para consultar os dados desejados.
+
+No capítulo de [Documentação das entidades](#documentação-das-entidades) estão dispostas em seções a documentação de cada entidade do grafo, em cada seção estão disponibilizadas algumas informações, sendo elas: uma breve descrição do que aquela entidade representa no grafo, representação visual da entidade e seus relacionamentos diretos com outras entidades, seu rótulo no grafo, uma tabela com suas propriedades com detalhes sobre cada uma delas, descrição detalhada dos relacionamentos diretos dessa entidade com outras e por fim algumas consultas de exemplo.
 
 ## Recursos de Suporte
 
-Informe sobre os recursos de suporte disponíveis para o leitor, como links para documentação adicional, fóruns de discussão, FAQs ou suporte técnico. Isso ajuda o leitor a encontrar ajuda adicional, caso necessário.
+### Bancos de dados Orientados a Grafos
 
-[neo4j data types](https://neo4j.com/docs/cypher-manual/4.4/values-and-types/)
+- [Oracle - Banco de dados de grafos definido](https://www.oracle.com/br/autonomous-database/what-is-graph-database/)
+
+- [AWS - O que é um banco de dados de grafos?](https://aws.amazon.com/pt/nosql/graph/)
+
+- [Neo4j Docs - Graph database concepts](https://neo4j.com/docs/getting-started/appendix/graphdb-concepts/)
+
+- [YouTube - Banco de Dados de Grafos de Propriedades, Neo4J e Cypher](https://www.youtube.com/watch?v=613XEcGYQC4)
+
+### Neo4j & Cypher
+
+- [Neo4j Docs - Welcome to Neo4j](https://neo4j.com/docs/getting-started/)
+
+- [Neo4j Docs - The property graph model](https://neo4j.com/docs/getting-started/get-started-with-neo4j/graph-database/#property-graph)
+
+- [Neo4j Docs - Query a Neo4j database using Cypher](https://neo4j.com/docs/getting-started/cypher-intro/)
+
+- [Neo4j Docs - Values and types](https://neo4j.com/docs/cypher-manual/4.4/values-and-types/)
 
 ## Documentação das entidades
 
