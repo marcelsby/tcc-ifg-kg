@@ -1,0 +1,5 @@
+services:
+  neo4j:
+    entrypoint: ["bash", "/dump-volume/scripts/dump-neo4j-ifg-db.sh"]
+    volumes:
+      - ./.docker/neo4j/:/dump-volume/

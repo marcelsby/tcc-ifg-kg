@@ -8,6 +8,7 @@ services:
     environment:
       NEO4J_dbms_default__database: ifg
       NEO4J_AUTH: neo4j/test
+      TZ: America/Sao_Paulo
     volumes:
       - neo4j_data:/data
   postgres:
