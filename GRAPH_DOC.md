@@ -382,7 +382,7 @@ Representa um Edital de Iniciação Científica que foi sediado em alguma Unidad
 
 #### Consultas de exemplo
 
-1. Quantidade de Editais de Iniciação Científica agrupados por Unidades:
+1. Quantidade de Editais de Iniciação Científica agrupados por Unidade:
 
    ```cypher
    MATCH (eic:EditalIniciacaoCientifica)-[:BASED_AT]->(u:Unidade) RETURN u.sigla, count(eic)
@@ -552,7 +552,7 @@ Representa uma Cidade que pode fazer parte de uma Unidade Federativa do Brasil.
 
 - **Cidade -[:PART_OF]➔ UnidadeFederativa**
 
-  Indica em qual Unidade Federativa do Brasil a cidade se localiza, caso a cidade não esteja localizada no Brasil esse relacionamento não existirá.
+  Indica em qual Unidade Federativa do Brasil a Cidade se localiza, caso a Cidade não esteja localizada no Brasil esse relacionamento não existirá.
 
 #### Consultas de exemplo
 
@@ -565,7 +565,7 @@ Representa uma Cidade que pode fazer parte de uma Unidade Federativa do Brasil.
 2. Quantidade de Cidades presentes por Unidade Federativa:
 
    ```cypher
-   MATCH (c:Cidade)-[:PART_OF]->(uf:UnidadeFederativa) RETURN uf.sigla, count(c) as cnt ORDER BY cnt DESC
+   MATCH (c:Cidade)-[:PART_OF]->(uf:UnidadeFederativa) RETURN uf.sigla, count(c) as qtd_cidades ORDER BY qtd_cidades DESC
    ```
 
 ### Palavra-chave
@@ -621,10 +621,13 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
 
 - **Servidor -[:HAS]➔ Curriculo**
 
+  Indica o Currículo de um Servidor, seja ele TAE ou Docente.
+
   - **Observações:**
     - Nem todos os Servidores possuem um Currículo no grafo, pois os dados vieram de datasets diferentes.
 
 - **Curriculo -[:HAS]➔ PalavraChave**
+
   As palavras chave que estão presentes em algum Currículo.
 
 #### Consultas de exemplo
@@ -635,7 +638,7 @@ Representa Currículo que pode estar ligado a um Servidor (TAE ou Docente).
    MATCH (c:Curriculo)<-[:HAS]-(s:Servidor) RETURN c, s LIMIT 10
    ```
 
-2. A palavra-chave que mais aparece nos Currículos e quantas vezes ocorreu sua aparição:
+2. A Palavra-chave que mais aparece nos Currículos e quantas vezes ocorreu sua aparição:
 
    ```cypher
    MATCH (c:Curriculo)-[r:HAS]->(pc:PalavraChave) RETURN count(r) as incidência, pc.palavra as palavra ORDER BY incidência DESC LIMIT 1
@@ -663,7 +666,8 @@ Texto publicado em algum jornal/revista que consta em algum Currículo.
 #### Relacionamentos
 
 - **Curriculo -[:HAS]➔ TextoJornal**
-  - Texto publicado em um jornal/revista que consta em algum Currículo.
+
+  Texto publicado em um jornal/revista que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -673,7 +677,7 @@ Texto publicado em algum jornal/revista que consta em algum Currículo.
    MATCH (tj:TextoJornal) RETURN tj LIMIT 20
    ```
 
-2. Quantidade de publicações por ano ordenadas por ano com mais publicações:
+2. Quantidade de publicações agrupadas por ano e ordenadas de maneira ascendente pela quantidade:
 
    ```cypher
    MATCH (tj:TextoJornal) RETURN tj.ano, count(tj) as quantidade ORDER BY quantidade DESC
@@ -701,7 +705,8 @@ Participação em Banca que consta em algum Currículo.
 #### Relacionamentos
 
 - **Curriculo -[:PART_OF]➔ Banca**
-  - Banca que o Currículo participou.
+
+  Banca que o Currículo participou.
 
 #### Consultas de exemplo
 
@@ -711,10 +716,10 @@ Participação em Banca que consta em algum Currículo.
    MATCH (b:Banca)<-[:PART_OF]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) WHERE u.sigla = 'JAT' RETURN count(b)
    ```
 
-2. Quantidade de Bancas por ano e qual ano teve mais bancas participadas:
+2. Quantidade de Bancas agrupadas por ano e ordenadas de maneira decrescente pela quantidade de Bancas:
 
    ```cypher
-   MATCH (b:Banca) RETURN b.ano, count(b) as ano ORDER BY ano DESC
+   MATCH (b:Banca) RETURN b.ano, count(b) as qtd_bancas ORDER BY qtd_bancas DESC
    ```
 
 ### Registro
@@ -739,7 +744,8 @@ Registro de patente que consta algum Currículo.
 #### Relacionamentos
 
 - **Curriculo -[:HAS]➔ Registro**
-  - Registro de patente que consta em algum Currículo.
+
+  Registro de patente que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -774,7 +780,8 @@ Participação em algum evento que consta em algum Currículo.
 #### Relacionamentos
 
 - **Curriculo -[:HAS]➔ ParticipacaoEvento**
-  - Participação em um evento que consta em algum Currículo.
+
+  Participação em um evento que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -811,10 +818,11 @@ Projeto de Pesquisa que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ ProjetoPesquisa**
 
-  - Projeto de Pesquisa que consta em algum Currículo.
+  Projeto de Pesquisa que consta em algum Currículo.
 
 - **ProjetoPesquisa -[:BASED_AT]➔ Unidade**
-  - Em qual(is) Unidade(s) o Projeto de Pesquisa foi sediado.
+
+  Em qual(is) Unidade(s) o Projeto de Pesquisa foi sediado.
 
 #### Consultas de exemplo
 
@@ -822,8 +830,8 @@ Projeto de Pesquisa que consta em algum Currículo.
 
    ```cypher
    MATCH (pp:ProjetoPesquisa)-[:BASED_AT]->(u:Unidade)
-   WITH pp, COUNT(DISTINCT u) as numUnidades
-   WHERE numUnidades > 1
+   WITH pp, COUNT(DISTINCT u) as qtd_unidades
+   WHERE qtd_unidades > 1
    MATCH (pp:ProjetoPesquisa)-[:BASED_AT]->(u:Unidade)
    RETURN pp, u
    ```
@@ -859,7 +867,7 @@ Orientação que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ Orientacao**
 
-  - Orientação que consta em algum Currículo.
+  Orientação que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -891,39 +899,7 @@ Atuação Profissional que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ AtuacaoProfissional**
 
-  - Atuação Profissional que consta em algum Currículo.
-
-#### Consultas de exemplo
-
-1. Quantidade de Atuações Profissionais sem ano de trabalho definido:
-
-   ```cypher
-   MATCH (ap:AtuacaoProfissional) WHERE ap.ano_trabalho IS NULL RETURN count(ap)
-   ```
-
-### Atuação Profissional
-
-Atuação Profissional que consta em algum Currículo.
-
-![diagrama atuação profissional](.github/resources/graph-docs/atuacao-profissional.svg)
-
-#### Rótulos
-
-1. `AtuacaoProfissional`
-
-#### Propriedades
-
-| Nome                | Obrigatória | Tipo de Dado |
-| ------------------- | ----------- | ------------ |
-| codigo              | Sim         | Integer      |
-| nome_da_instituicao | Sim         | String       |
-| ano_trabalho        | Não         | Integer      |
-
-#### Relacionamentos
-
-- **Curriculo -[:HAS]➔ AtuacaoProfissional**
-
-  - Atuação Profissional que consta em algum Currículo.
+  Atuação Profissional que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -955,7 +931,7 @@ Atividade que era executada durante o exercício de uma Atuação Profissional.
 
 - **AtuacaoProfissional -[:HAS]➔ Atividade**
 
-  - Atividade que era executada durante uma Atuação Profissional.
+  Atividade que era executada durante uma Atuação Profissional.
 
 #### Consultas de exemplo
 
@@ -989,7 +965,7 @@ Produção Técnica que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ ProducaoTecnica**
 
-  - Produção Técnica que consta em algum Currículo.
+  Produção Técnica que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -999,7 +975,7 @@ Produção Técnica que consta em algum Currículo.
    MATCH (pt:ProducaoTecnica)<-[:HAS]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) RETURN u.sigla, count(pt) as qtd_producoes ORDER BY qtd_producoes DESC
    ```
 
-2. Quantidade de Produções Técnicas agrupadas por ano, a quantidade ordenada de forma decrescente:
+2. Quantidade de Produções Técnicas agrupadas por ano e a quantidade ordenada de forma decrescente:
 
    ```cypher
    MATCH (pt:ProducaoTecnica)<-[:HAS]-(c:Curriculo)<-[:HAS]-(s:Servidor)-[:PART_OF]->(u:Unidade) RETURN pt.ano, count(pt) as qtd_producoes ORDER BY qtd_producoes DESC
@@ -1030,7 +1006,7 @@ Outra Produção que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ OutraProducao**
 
-  - Outra Produção que consta em algum Currículo.
+  Outra Produção que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -1038,8 +1014,8 @@ Outra Produção que consta em algum Currículo.
 
    ```cypher
    MATCH (c:Curriculo)-[:HAS]->(op:OutraProducao)
-   RETURN c.link, c.nome_completo, COUNT(op) AS numProducoes
-   ORDER BY numProducoes DESC
+   RETURN c.link, c.nome_completo, COUNT(op) as qtd_producoes
+   ORDER BY qtd_producoes DESC
    ```
 
 ### Área de Atuação
@@ -1066,7 +1042,7 @@ Outra Produção que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ AreaAtuacao**
 
-  - Área de Atuação que consta em algum Currículo.
+  Área de Atuação que consta em algum Currículo.
 
 #### Consultas de exemplo
 
@@ -1101,7 +1077,7 @@ Formação Acadêmica que consta em algum Currículo.
 
 - **Curriculo -[:HAS]➔ FormacaoAcademica**
 
-  - Formação Acadêmica que consta em algum Currículo.
+  Formação Acadêmica que consta em algum Currículo.
 
 - **FormacaoAcademica -[:AT]➔ Unidade**
 
@@ -1219,7 +1195,7 @@ Uma Produção Bibliográfica que pode estar ligada a uma Revista ou a uma Confe
 
 - **Curriculo -[:HAS]➔ ProducaoBibliografica**
 
-  - Publicação Bibliográfica que consta em algum Currículo.
+  Publicação Bibliográfica que consta em algum Currículo.
 
 - **ProducaoBibliografica -[:PRESENTED_AT]➔ Revista**
 
@@ -1244,10 +1220,10 @@ Uma Produção Bibliográfica que pode estar ligada a uma Revista ou a uma Confe
 
    ```cypher
    MATCH (pb:ProducaoBibliografica)-[:PRESENTED_AT]->(r:Revista)
-   WITH count(pb) as publicadasEmRevista
+   WITH count(pb) as publicadas_em_revista
    MATCH (pb:ProducaoBibliografica)-[:PRESENTED_AT]->(c:Conferencia)
-   WITH publicadasEmRevista, count(pb) as publicadasEmConferencia
-   RETURN publicadasEmRevista, publicadasEmConferencia
+   WITH publicadas_em_revista, count(pb) as publicada_em_conferencia
+   RETURN publicadas_em_revista, publicada_em_conferencia
    ```
 
 ### Linha de Pesquisa
@@ -1271,7 +1247,7 @@ A definição de uma Linha de Pesquisa.
 
 - **Curriculo -[:STUDY]➔ LinhaPesquisa**
 
-  - A Linha de Pesquisa estudada pelo pesquisador, que consta no Currículo.
+  A Linha de Pesquisa estudada pelo pesquisador, que consta no Currículo.
 
 #### Consultas de exemplo
 
@@ -1307,15 +1283,15 @@ A definição de um Grupo de Pesquisa.
 
 - **Curriculo -[:PART_OF]➔ GrupoPesquisa**
 
-  - O Grupo de Pesquisa que consta no Currículo do pesquisador que ele faz parte.
+  O Grupo de Pesquisa que consta no Currículo do pesquisador que ele faz parte.
 
 - **GrupoPesquisa -[:HAS_MEMBER]➔ Curriculo**
 
-  - Indica que o Grupo de Pesquisa possui como membro o pesquisador ao qual pertence o Currículo.
+  Indica que o Grupo de Pesquisa possui como membro o pesquisador ao qual pertence o Currículo.
 
 - **GrupoPesquisa -[:STUDY]➔ LinhaPesquisa**
 
-  - Indica uma Linha de Pesquisa que o Grupo de Pesquisa estuda.
+  Indica uma Linha de Pesquisa que o Grupo de Pesquisa estuda.
 
 #### Consultas de exemplo
 
@@ -1352,11 +1328,11 @@ A definição de um Discente participante de um Grupo de Pesquisa. Este Discente
 
 - **DiscenteGrupoPesquisa -[:PART_OF]➔ GrupoPesquisa**
 
-  - Indica a relação de um DiscenteGrupoPesquisa que participa de um Grupo de Pesquisa.
+  Indica a relação de um DiscenteGrupoPesquisa que participa de um Grupo de Pesquisa.
 
 - **GrupoPesquisa -[:HAS_MEMBER]➔ DiscenteGrupoPesquisa**
 
-  - Indica que o Grupo de Pesquisa possui como membro um DiscenteGrupoPesquisa.
+  Indica que o Grupo de Pesquisa possui como membro um DiscenteGrupoPesquisa.
 
 #### Consultas de exemplo
 
