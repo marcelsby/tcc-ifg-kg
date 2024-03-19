@@ -3,6 +3,11 @@
 Repositório referente ao código-fonte da solução tecnológica proposta pelo meu TCC, intitulado "Construção de um Grafo
 do Conhecimento Acadêmico a partir da estrutura semântica dos dados do IFG".
 
+## Links rápidos
+
+- [Documentação do grafo](GRAPH_DOC.md)
+- [Gerenciamento de _Dumps_](DUMP_MANAGEMENT.md)
+
 ## Requisitos
 
 - Python 3.10+
