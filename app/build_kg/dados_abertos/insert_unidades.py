@@ -30,7 +30,7 @@ def _create_unidades_queries(row):
     for property_key in properties_keys:
         value_type = Neo4jDataType.STRING
 
-        if property_key == "uasg":
+        if property_key in ["uasg", "numero"]:
             value_type = Neo4jDataType.INTEGER
 
         cqb_add_property_when_value_not_absent(

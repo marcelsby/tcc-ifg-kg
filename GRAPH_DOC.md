@@ -48,20 +48,21 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
 
 #### Propriedades
 
-| Nome       | Obrigatória | Tipo de Dado | Formato adicional    |
-| ---------- | ----------- | ------------ | -------------------- |
-| nome       | Sim         | String       |                      |
-| sigla      | Sim         | String       |                      |
-| logradouro | Não         | String       |                      |
-| numero     | Não         | String       |                      |
-| bairro     | Não         | String       |                      |
-| cep        | Não         | String       | "00000-000"          |
-| cidade     | Não         | String       |                      |
-| site       | Sim         | String       |                      |
-| telefone   | Sim         | String       | "(ddd) 0000-0000"    |
-| email      | Sim         | String       | "xxxxx@ifg.edu.br"   |
-| cnpj       | Sim         | String       | "00.000.000/0000-00" |
-| uasg       | Sim         | String       |                      |
+| Nome        | Obrigatória | Tipo de Dado | Formato adicional    |
+|-------------| ----------- |--------------| -------------------- |
+| nome        | Sim         | String       |                      |
+| sigla       | Sim         | String       |                      |
+| logradouro  | Não         | String       |                      |
+| numero      | Não         | Integer      |                      |
+| complemento | Não         | String       |                      |
+| bairro      | Não         | String       |                      |
+| cep         | Não         | String       | "00000-000"          |
+| cidade      | Não         | String       |                      |
+| site        | Sim         | String       |                      |
+| telefone    | Sim         | String       | "(ddd) 0000-0000"    |
+| email       | Sim         | String       | "xxxxx@ifg.edu.br"   |
+| cnpj        | Sim         | String       | "00.000.000/0000-00" |
+| uasg        | Sim         | String       |                      |
 
 #### Consultas de exemplo
 
