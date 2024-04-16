@@ -106,7 +106,8 @@ def insert(connection: Neo4jConnection):
         connection,
         storage.get_file("grupos_de_pesquisa.csv"),
         storage.get_file("linhas_de_pesquisa.csv"),
-        storage.get_file("alunos.csv")
+        storage.get_file("alunos.csv"),
+        storage.get_file("curriculo_grupos.csv")
     )
 
 

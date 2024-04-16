@@ -6,7 +6,7 @@ import pandas as pd
 
 from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
-                                   make_relationship_query)
+                                   make_relationship_query, CypherJsonLikeProperty)
 from app.build_kg.utils import (GeneralFilters,
                                 cqb_add_property_when_value_not_absent,
                                 remove_properties)
@@ -17,16 +17,27 @@ from app.utils.storage import Storage
 def execute(conn: Neo4jConnection,
             grupos_pesquisa_csv: Path,
             linhas_pesquisa_csv: Path,
-            discentes_csv: Path):
+            discentes_csv: Path,
+            intermediaria_csv: Path):
     linhas_pesquisa_df = pd.read_csv(linhas_pesquisa_csv, delimiter=";")
 
-    transactions = linhas_pesquisa_df.apply(_create_linha_pesquisa_transaction, axis=1)
+    queries = linhas_pesquisa_df.apply(_create_linha_pesquisa_query, axis=1)
 
     start = time.perf_counter()
-    conn.run_transactions_batched(transactions, 5, 200)
+    conn.run_queries_batched(queries, 15, 200)
     end = time.perf_counter()
 
     print(f"[ifg_produz] Linhas de Pesquisa ({linhas_pesquisa_df.shape[0]} linhas): {end - start}s")
+
+    intermediaria_df = pd.read_csv(intermediaria_csv, delimiter=";")
+
+    queries = intermediaria_df.apply(_create_curriculo_to_linha_pesquisa_relationship_query, axis=1)
+
+    start = time.perf_counter()
+    conn.run_queries_batched(queries, 10, 200)
+    end = time.perf_counter()
+
+    print(f"[ifg_produz] Currículo -[:STUDY]-> Linha de Pesquisa ({intermediaria_df.shape[0]} linhas): {end - start}s")
 
     grupos_pesquisa_df = pd.read_csv(grupos_pesquisa_csv, delimiter=";")
 
@@ -50,21 +61,8 @@ def execute(conn: Neo4jConnection,
 
 
 # Linha de pesquisa
-def _create_linha_pesquisa_transaction(row):
-    transaction = []
-
-    if pd.notna(row["codigos_curriculos"]):
-        transaction = [*_create_curriculo_to_linha_pesquisa_relationship_queries(row)]
-
-    transaction.insert(0, _create_linha_pesquisa_query(row))
-
-    return tuple(transaction)
-
-
 def _create_linha_pesquisa_query(row):
     properties_keys = list(row.index)
-
-    properties_keys.remove("codigos_curriculos")
 
     create_query_builder = CypherCreateQueryBuilder("LinhaPesquisa")
 
@@ -84,19 +82,15 @@ def _create_linha_pesquisa_query(row):
     return create_query_builder.build()
 
 
-def _create_curriculo_to_linha_pesquisa_relationship_queries(row):
-    queries = []
-
-    for codigo_curriculo in ast.literal_eval(row["codigos_curriculos"]):
-        queries.append(make_relationship_query(
-            "Curriculo",
-            GeneralFilters.integer_codigo_filter(codigo_curriculo),
-            "LinhaPesquisa",
-            GeneralFilters.integer_codigo_filter(row["codigo"]),
-            "STUDY"
-        ))
-
-    return queries
+def _create_curriculo_to_linha_pesquisa_relationship_query(row):
+    return make_relationship_query(
+        "Curriculo",
+        GeneralFilters.integer_codigo_filter(row["id_curriculo"]),
+        "LinhaPesquisa",
+        GeneralFilters.integer_codigo_filter(row["id_linha"]),
+        "STUDY",
+        [CypherJsonLikeProperty("at_research_group", row["id_grupo"], Neo4jDataType.INTEGER)]
+    )
 
 
 # Grupo de Pesquisa
@@ -265,5 +259,6 @@ if __name__ == '__main__':
                                    Environment.neo4j_host, Environment.neo4j_port),
         Storage.get_file("ifg_produz/preprocessed/grupos_de_pesquisa.csv"),
         Storage.get_file("ifg_produz/preprocessed/linhas_de_pesquisa.csv"),
-        Storage.get_file("ifg_produz/preprocessed/alunos.csv")
+        Storage.get_file("ifg_produz/preprocessed/alunos.csv"),
+        Storage.get_file("ifg_produz/preprocessed/curriculo_grupos.csv")
     )
