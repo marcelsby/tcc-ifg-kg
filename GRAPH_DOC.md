@@ -1,16 +1,31 @@
 # Diagrama Estrutural do Grafo do Conhecimento do IFG
 
-O presente documento apresenta o diagrama detalhado do Grafo do Conhecimento Acadêmico, construído a partir da estrutura semântica dos dados do Instituto Federal de Goiás (IFG). Esse grafo, armazenado no banco de dados [Neo4j](https://neo4j.com/docs/getting-started/get-started-with-neo4j/graph-database/), possibilita a representação dos dados de maneira visual (e intuitiva) das entidades e seus relacionamentos do ambiente acadêmico do IFG.
+O presente documento apresenta o diagrama detalhado do Grafo do Conhecimento Acadêmico, construído a partir da estrutura
+semântica dos dados do Instituto Federal de Goiás (IFG). Esse grafo, armazenado no banco de
+dados [Neo4j](https://neo4j.com/docs/getting-started/get-started-with-neo4j/graph-database/), possibilita a
+representação dos dados de maneira visual (e intuitiva) das entidades e seus relacionamentos do ambiente acadêmico do
+IFG.
 
-O diagrama abrange a estrutura do grafo, destacando os diferentes tipos de nós e suas propriedades (também podendo ser chamadas de atributos, um par de chave-valor), bem como os relacionamentos entre eles. Essa representação proporciona uma visão clara e abrangente da complexidade das informações acadêmicas, auxiliando na compreensão e análise dos dados.
+O diagrama abrange a estrutura do grafo, destacando os diferentes tipos de nós e suas propriedades (também podendo ser
+chamadas de atributos, um par de chave-valor), bem como os relacionamentos entre eles. Essa representação proporciona
+uma visão clara e abrangente da complexidade das informações acadêmicas, auxiliando na compreensão e análise dos dados.
 
-Ao explorar esse diagrama juntamente com a documentação abaixo, é possível visualizar a interconexão entre Cursos, Disciplinas, Docentes, Discentes e demais elementos do ambiente acadêmico, contribuindo para uma melhor compreensão da estrutura e uma boa introdução à escrita de consultas utilizando a linguagem [Cypher](<https://en.wikipedia.org/wiki/Cypher_(query_language)>), linguagem de consulta específica do Neo4j.
+Ao explorar esse diagrama juntamente com a documentação abaixo, é possível visualizar a interconexão entre Cursos,
+Disciplinas, Docentes, Discentes e demais elementos do ambiente acadêmico, contribuindo para uma melhor compreensão da
+estrutura e uma boa introdução à escrita de consultas utilizando a
+linguagem [Cypher](<https://en.wikipedia.org/wiki/Cypher_(query_language)>), linguagem de consulta específica do Neo4j.
 
 ## Estrutura da documentação
 
-No capítulo de [Recursos de Suporte](#recursos-de-suporte) estão alguns links para auxiliar o leitor que estiver iniciando seu aprendizado com bancos de dados orientados a grafos e o Neo4j em específico, com esses materiais espera-se que o leitor consiga ter um norte para aprender o necessário de Cypher para consultar os dados desejados.
+No capítulo de [Recursos de Suporte](#recursos-de-suporte) estão alguns links para auxiliar o leitor que estiver
+iniciando seu aprendizado com bancos de dados orientados a grafos e o Neo4j em específico, com esses materiais espera-se
+que o leitor consiga ter um norte para aprender o necessário de Cypher para consultar os dados desejados.
 
-No capítulo de [Documentação das entidades](#documentação-das-entidades) estão dispostas em seções a documentação de cada entidade do grafo, em cada seção estão disponibilizadas algumas informações, sendo elas: uma breve descrição do que aquela entidade representa no grafo, representação visual da entidade e seus relacionamentos diretos com outras entidades, seu rótulo no grafo, uma tabela com suas propriedades com detalhes sobre cada uma delas, descrição detalhada dos relacionamentos diretos dessa entidade com outras e por fim algumas consultas de exemplo.
+No capítulo de [Documentação das entidades](#documentação-das-entidades) estão dispostas em seções a documentação de
+cada entidade do grafo, em cada seção estão disponibilizadas algumas informações, sendo elas: uma breve descrição do que
+aquela entidade representa no grafo, representação visual da entidade e seus relacionamentos diretos com outras
+entidades, seu rótulo no grafo, uma tabela com suas propriedades com detalhes sobre cada uma delas, descrição detalhada
+dos relacionamentos diretos dessa entidade com outras e por fim algumas consultas de exemplo.
 
 ## Recursos de Suporte
 
@@ -49,7 +64,7 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
 #### Propriedades
 
 | Nome        | Obrigatória | Tipo de Dado | Formato adicional    |
-|-------------| ----------- |--------------| -------------------- |
+| ----------- | ----------- | ------------ | -------------------- |
 | nome        | Sim         | String       |                      |
 | sigla       | Sim         | String       |                      |
 | logradouro  | Não         | String       |                      |
@@ -74,7 +89,8 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
 
 ### Servidor
 
-É um rótulo auxiliar que atua como agrupador para os servidores federais presentes no grafo, sejam eles Docentes ou TAEs.
+É um rótulo auxiliar que atua como agrupador para os servidores federais presentes no grafo, sejam eles Docentes ou
+TAEs.
 
 ![diagrama servidor](.github/resources/graph-docs/servidor.svg)
 
@@ -100,7 +116,8 @@ Representa uma unidade do IFG com um codigo UASG, que identifica unicamente um �
 
 ### Docente
 
-Representa um docente efetivo, que obrigatóriamente possui uma matrícula SIAPE e neste caso está vinculado a alguma Unidade do IFG.
+Representa um docente efetivo, que obrigatóriamente possui uma matrícula SIAPE e neste caso está vinculado a alguma
+Unidade do IFG.
 
 ![diagrama docente](.github/resources/graph-docs/docente.svg)
 
@@ -283,7 +300,8 @@ Representa uma Disciplina que é ministrada em um Curso.
 
 #### Consultas de exemplo
 
-1. O nome das Disciplinas lecionadas no curso de TADS da Unidade Jataí, ordenadas de maneira ascendente pelo período que são ofertadas:
+1. O nome das Disciplinas lecionadas no curso de TADS da Unidade Jataí, ordenadas de maneira ascendente pelo período que
+   são ofertadas:
 
    ```cypher
    MATCH (d:Disciplina)-[:TAUGHT_AT]->(c:Curso) WHERE c.codigo = 471 RETURN d.nome ORDER BY d.periodo
@@ -349,7 +367,8 @@ instância de Disciplina, que foi ministrada em algum ano/período, em algum Cur
 
 #### Consultas de exemplo
 
-1. Disciplinas Ministradas por Docentes aleatórios, juntamente com o Docente e a definição de cada uma dessas Disciplinas Ministradas:
+1. Disciplinas Ministradas por Docentes aleatórios, juntamente com o Docente e a definição de cada uma dessas
+   Disciplinas Ministradas:
 
    ```cypher
    MATCH (a:Docente)-[:TAUGHT]->(b:DisciplinaMinistrada)-[:DEFINED_BY]->(c:Disciplina) RETURN a, b, c LIMIT 20
@@ -394,7 +413,8 @@ Representa um Edital de Iniciação Científica que foi sediado em alguma Unidad
   Edital de Iniciação Científica que foi sediado em uma unidade.
 
   - **Observações:**
-    - Caso a propriedade "unidade" do Edital de Iniciação Científica esteja presente, este relacionamento não existirá.
+    - Caso a propriedade "unidade" do Edital de Iniciação Científica esteja presente, este relacionamento não
+      existirá.
 
 #### Consultas de exemplo
 
@@ -458,7 +478,8 @@ Representa um Discente que estudou/estuda no IFG.
    MATCH (d:Discente) WHERE d.nome_curso IS NOT NULL RETURN count(d)
    ```
 
-2. Situação e quantidade de Discentes do nível Superior, para cada situação, da unidade de Jataí, ordenados de maneira descendente:
+2. Situação e quantidade de Discentes do nível Superior, para cada situação, da unidade de Jataí, ordenados de maneira
+   descendente:
 
    ```cypher
    MATCH (d:Discente)-[:STUDY_AT]->(u:Unidade) WHERE u.sigla = 'JAT' AND d.nivel = "Superior" RETURN d.situacao, count(d) as c ORDER BY c DESC
@@ -499,7 +520,8 @@ Representa um Estágio Curricular que foi realizado por algum discente durante a
   Qual Curso o discente que realizou o estágio estava cursando.
 
   - **Observações:**
-    - Caso as propriedades "sigla_campus" e "curso" do Estágio Curricular estejam presentes, este relacionamento não existirá.
+    - Caso as propriedades "sigla_campus" e "curso" do Estágio Curricular estejam presentes, este relacionamento não
+      existirá.
 
 #### Consultas de exemplo
 
@@ -515,7 +537,8 @@ Representa um Estágio Curricular que foi realizado por algum discente durante a
    MATCH (ec:EstagioCurricular) WHERE ec.curso IS NOT NULL RETURN count(ec)
    ```
 
-3. Estágios Curriculares realizados por discentes que cursaram o Curso de Manutenção e Suporte em Informática na Unidade Jataí:
+3. Estágios Curriculares realizados por discentes que cursaram o Curso de Manutenção e Suporte em Informática na Unidade
+   Jataí:
 
    ```
    MATCH (ec:EstagioCurricular)-[:UNDERTOOK_AT]->(c:Curso) WHERE c.codigo = 1028 RETURN ec, c
@@ -568,7 +591,8 @@ Representa uma Cidade que pode fazer parte de uma Unidade Federativa do Brasil.
 
 - **Cidade -[:PART_OF]➔ UnidadeFederativa**
 
-  Indica em qual Unidade Federativa do Brasil a Cidade se localiza, caso a Cidade não esteja localizada no Brasil esse relacionamento não existirá.
+  Indica em qual Unidade Federativa do Brasil a Cidade se localiza, caso a Cidade não esteja localizada no Brasil esse
+  relacionamento não existirá.
 
 #### Consultas de exemplo
 
@@ -852,7 +876,8 @@ Projeto de Pesquisa que consta em algum Currículo.
    RETURN pp, u
    ```
 
-2. O Currículo que possui mais Projetos de Pesquisa, qual a quantidade de Projetos encontrados e qual o link para o Currículo:
+2. O Currículo que possui mais Projetos de Pesquisa, qual a quantidade de Projetos encontrados e qual o link para o
+   Currículo:
 
    ```cypher
    MATCH (pp:ProjetoPesquisa)<-[:HAS]-(c:Curriculo) RETURN c.link, count(pp) as qtd_projetos_pesquisa ORDER BY qtd_projetos_pesquisa DESC LIMIT 1
@@ -1257,13 +1282,19 @@ A definição de uma Linha de Pesquisa.
 | Nome   | Obrigatória | Tipo de Dado |
 | ------ | ----------- | ------------ |
 | codigo | Sim         | Integer      |
-| titulo | Sim         | String       |
+| nome   | Sim         | String       |
 
 #### Relacionamentos
 
 - **Curriculo -[:STUDY]➔ LinhaPesquisa**
 
-  A Linha de Pesquisa estudada pelo pesquisador, que consta no Currículo.
+  A Linha de Pesquisa estudada pelo pesquisador (Currículo) em um determinado Grupo de Pesquisa.
+
+  - Propriedades:
+
+    | Nome              | Obrigatória | Tipo de Dado | Descrição                                   |
+    | ----------------- | ----------- | ------------ | ------------------------------------------- |
+    | at_research_group | Sim         | Integer      | Referencia o `codigo` do Grupo de Pesquisa. |
 
 #### Consultas de exemplo
 
@@ -1325,7 +1356,8 @@ A definição de um Grupo de Pesquisa.
 
 ### Discente participante de um Grupo de Pesquisa
 
-A definição de um Discente participante de um Grupo de Pesquisa. Este Discente não é o mesmo que foi citado anteriormente, são dados diferentes, esse é mais específico.
+A definição de um Discente participante de um Grupo de Pesquisa. Este Discente não é o mesmo que foi citado
+anteriormente, são dados diferentes, esse é mais específico.
 
 ![diagrama discente grupo de pesquisa](.github/resources/graph-docs/discente-grupo-pesquisa.svg)
 
