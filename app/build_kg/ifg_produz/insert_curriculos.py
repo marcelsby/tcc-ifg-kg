@@ -23,6 +23,8 @@ def execute(conn: Neo4jConnection, curriculos_csv: Path):
     conn.run_transactions_batched(transactions, 200, 150)
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX curriculo_codigo FOR (c:Curriculo) ON (c.codigo)")
+
     print(f"[ifg_produz] Currículos ({curriculos_df.shape[0]} linhas): {end - start}s")
 
 

@@ -4,9 +4,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from app.build_kg.database import (CypherCreateQueryBuilder, Neo4jConnection,
+from app.build_kg.database import (CypherCreateQueryBuilder,
+                                   CypherJsonLikeProperty, Neo4jConnection,
                                    Neo4jDataType, make_neo4j_bolt_connection,
-                                   make_relationship_query, CypherJsonLikeProperty)
+                                   make_relationship_query)
 from app.build_kg.utils import (GeneralFilters,
                                 cqb_add_property_when_value_not_absent,
                                 remove_properties)

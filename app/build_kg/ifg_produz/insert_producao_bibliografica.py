@@ -22,6 +22,8 @@ def execute(conn: Neo4jConnection, producao_bibliografica_csv: Path, revista_csv
     conn.run_queries_batched(queries, 500, 200)
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX revista_codigo FOR (r:Revista) ON (r.codigo)")
+
     print(f"[ifg_produz] Revista ({revista_df.shape[0]} linhas): {end - start}s")
 
     conferencia_df = pd.read_csv(conferencia_csv, delimiter=";")
@@ -31,6 +33,8 @@ def execute(conn: Neo4jConnection, producao_bibliografica_csv: Path, revista_csv
     start = time.perf_counter()
     conn.run_queries_batched(queries, 500, 200)
     end = time.perf_counter()
+
+    conn.query("CREATE INDEX conferencia_codigo FOR (c:Conferencia) ON (c.codigo)")
 
     print(f"[ifg_produz] Conferência ({conferencia_df.shape[0]} linhas): {end - start}s")
 

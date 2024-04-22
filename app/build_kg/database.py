@@ -1,3 +1,4 @@
+# TODO: refatorar todo esse módulo, focando em trazer um approach otimizado para as inserções
 import logging as log
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import Enum, auto
@@ -65,6 +66,18 @@ class Neo4jConnection:
                     session.run(query)
                 except Neo4jError as e:
                     new_message = f"{e}. Query: {query}"
+
+                    raise Exception(new_message) from e
+
+    def run_parametrized_query_with_args_list(self, parametrized_query, argslist: list[dict]):
+        self.check_driver_initialized()
+
+        with self.driver.session() as session:
+            for args in argslist:
+                try:
+                    session.run(parametrized_query, parameters=args)
+                except Neo4jError as e:
+                    new_message = f"{e}. Query: {parametrized_query}"
 
                     raise Exception(new_message) from e
 

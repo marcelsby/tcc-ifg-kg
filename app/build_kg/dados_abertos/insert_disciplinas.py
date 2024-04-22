@@ -21,6 +21,8 @@ def execute(conn: Neo4jConnection, disciplinas_csv: Path):
     conn.run_transactions_batched(transactions, 50, 200)
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX disciplina_codigo FOR (d:Disciplina) ON (d.codigo)")
+
     print(f"[dados_abertos] Disciplinas ({disciplinas_df.shape[0]} linhas): {end - start}s")
 
 

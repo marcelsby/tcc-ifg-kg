@@ -19,6 +19,8 @@ def execute(conn: Neo4jConnection, unidades_csv: Path):
     conn.run_queries(tuple(queries))
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX unidade_sigla FOR (u:Unidade) ON (u.sigla)")
+
     print(f"[dados_abertos] Unidades ({unidades_df.shape[0]} linhas): {end - start}s")
 
 

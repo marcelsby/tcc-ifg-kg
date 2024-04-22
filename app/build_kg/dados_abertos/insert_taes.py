@@ -21,6 +21,8 @@ def execute(conn: Neo4jConnection, taes_csv: Path):
     conn.run_transactions_batched(transactions, 80, 200)
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX tae_matricula FOR (tae:TAE) ON (tae.matricula)")
+
     print(f"[dados_abertos] TAEs ({taes_df.shape[0]} linhas): {end - start}s")
 
 

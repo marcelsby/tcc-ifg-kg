@@ -19,6 +19,8 @@ def execute(conn: Neo4jConnection, palavras_chaves_csv: Path):
     conn.run_queries_batched(tuple(create_queries), 1000)
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX palavra_chave_palavra FOR (pc:PalavraChave) ON (pc.palavra)")
+
     print(f"[ifg_produz] Palavras Chaves ({palavras_chaves_df.shape[0]} linhas): {end - start}s")
 
 

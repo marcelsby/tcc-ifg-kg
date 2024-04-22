@@ -21,6 +21,8 @@ def execute(conn: Neo4jConnection, cidades_csv: Path):
     conn.run_transactions(transactions)
     end = time.perf_counter()
 
+    conn.query("CREATE INDEX cidade_codigo FOR (c:Cidade) ON (c.codigo)")
+
     print(f"[ifg_produz] Cidades ({cidades_df.shape[0]} linhas): {end - start}s")
 
 
