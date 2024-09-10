@@ -194,7 +194,7 @@ def _create_grupo_pesquisa_research_lines_queries(row):
             GeneralFilters.integer_codigo_filter(row["codigo"]),
             "LinhaPesquisa",
             GeneralFilters.integer_codigo_filter(research_line_code),
-            "HAS"
+            "STUDY"
         ))
 
     return queries
